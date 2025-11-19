@@ -1,13 +1,13 @@
 # 🎨 Manhwaindo API
 
 <div align="center">
-  <img src="https://avatars.githubusercontent.com/u/YOUR_GITHUB_ID?v=4" alt="Avatar" width="100" height="100" style="border-radius: 50%;" />
+  <img src="https://avatars.githubusercontent.com/u/136323687?v=4" alt="Ramadhanu Avatar" width="100" height="100" style="border-radius: 50%;" />
   <p><strong>Ramadhanu</strong></p>
 </div>
 
 Express.js API scraper untuk [manhwaindo.app](https://manhwaindo.app) dengan caching intelligent dan real-time status monitoring.
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/YOUR_NETLIFY_ID/deploy-status)](https://apimanhwa.netlify.app)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/274ed6e9-36d4-4ed4-97f1-b24345a5a46a/deploy-status)](https://app.netlify.com/projects/apimanhwa/deploys)
 [![License: ISC](https://img.shields.io/badge/License-ISC-yellow.svg)](https://opensource.org/licenses/ISC)
 
 ## 🚀 Fitur
