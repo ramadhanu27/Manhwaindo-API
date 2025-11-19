@@ -8,7 +8,7 @@
 Express.js API scraper untuk [manhwaindo.app](https://manhwaindo.app) dengan caching intelligent dan real-time status monitoring.
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/274ed6e9-36d4-4ed4-97f1-b24345a5a46a/deploy-status)](https://app.netlify.com/projects/apimanhwa/deploys)
-[![License: ISC](https://img.shields.io/badge/License-ISC-yellow.svg)](https://opensource.org/licenses/ISC)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ## 🚀 Fitur
 
