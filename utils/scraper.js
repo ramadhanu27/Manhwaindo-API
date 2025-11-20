@@ -349,9 +349,71 @@ async function scrapeChapter(slug) {
       }
     });
 
-    // Get prev and next chapter
-    const prevChapter = $('.ch-prev-btn').attr('href')?.replace(BASE_URL, '').replace('/', '') || null;
-    const nextChapter = $('.ch-next-btn').attr('href')?.replace(BASE_URL, '').replace('/', '') || null;
+    // Get series slug from breadcrumb
+    let seriesSlug = null;
+    const breadcrumbLink = $('.allc a').first();
+    if (breadcrumbLink.length > 0) {
+      const seriesUrl = breadcrumbLink.attr('href') || '';
+      // Check if it's a valid series URL (not bookmark or other pages)
+      if (seriesUrl.includes('/series/')) {
+        seriesSlug = seriesUrl.replace(BASE_URL, '').replace('/series/', '').replace(/\//g, '').trim();
+      }
+    }
+    
+    // Fallback 1: Extract series name from title if breadcrumb doesn't work
+    if (!seriesSlug) {
+      // Title format: "Series Name Chapter X"
+      const titleMatch = title.match(/^(.+?)\s+Chapter\s+\d+/i);
+      if (titleMatch) {
+        const seriesName = titleMatch[1].trim();
+        seriesSlug = seriesName.toLowerCase().replace(/\s+/g, '-');
+      }
+    }
+    
+    // Fallback 2: Extract from chapter slug pattern (series-name-chapter-X)
+    if (!seriesSlug && slug) {
+      const slugMatch = slug.match(/^(.+?)-chapter-\d+/i);
+      if (slugMatch) {
+        seriesSlug = slugMatch[1].trim();
+      }
+    }
+
+    // If we have series slug, fetch chapter list to get prev/next
+    let prevChapter = null;
+    let nextChapter = null;
+
+    if (seriesSlug) {
+      try {
+        const seriesUrl = `${BASE_URL}/series/${seriesSlug}/`;
+        const $series = await fetchHTML(seriesUrl);
+        
+        // Get all chapters
+        const chapterSlugs = [];
+        $series('#chapterlist li a').each((i, elem) => {
+          const chapterUrl = $series(elem).attr('href') || '';
+          const chapterSlug = chapterUrl.replace(BASE_URL, '').replace(/^\//, '').replace(/\/$/, '').trim();
+          if (chapterSlug && !chapterSlugs.includes(chapterSlug)) {
+            chapterSlugs.push(chapterSlug);
+          }
+        });
+
+        // Find current chapter index
+        const currentIndex = chapterSlugs.indexOf(slug);
+        if (currentIndex !== -1) {
+          // Previous chapter (index - 1)
+          if (currentIndex > 0) {
+            prevChapter = chapterSlugs[currentIndex - 1];
+          }
+          // Next chapter (index + 1)
+          if (currentIndex < chapterSlugs.length - 1) {
+            nextChapter = chapterSlugs[currentIndex + 1];
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching series detail for navigation:', err.message);
+        // Continue without prev/next navigation
+      }
+    }
 
     return {
       success: true,

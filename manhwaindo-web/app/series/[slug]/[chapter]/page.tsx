@@ -15,15 +15,34 @@ export default async function ChapterPage({
   
   console.log('Chapter page params:', { slug, chapter });
   
+  // Validate chapter slug
+  if (!chapter || chapter.trim() === '') {
+    console.error('Invalid chapter slug');
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl font-bold mb-4">Invalid Chapter</h1>
+          <p className="text-muted-foreground mb-4">Chapter slug is empty or invalid.</p>
+          <Link
+            href={`/series/${encodeURIComponent(cleanSlug(slug))}`}
+            className="inline-block px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold transition-colors"
+          >
+            Back to Series
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  
   const data = await getChapterImages(chapter);
   
   console.log('Chapter data:', data);
   
-  // API returns { success: true, data: { images: [...] } }
-  const chapterData = data.data || data;
-  const images = chapterData.images || [];
+  // API returns { success: true, data: { images: [...], title: "...", prevChapter: "...", nextChapter: "..." } }
+  const chapterData = data?.data || data || {};
+  const images = chapterData?.images || [];
   
-  if (!data.success || !images || images.length === 0) {
+  if (!data?.success || !images || images.length === 0) {
     console.error('Chapter not found or no images:', { slug, chapter, data });
     
     // Return error page instead of 404
@@ -52,11 +71,13 @@ export default async function ChapterPage({
   }
 
   const chapterTitle = chapterData.title || chapter.replace(/-/g, ' ');
+  const prevChapter = chapterData.prevChapter;
+  const nextChapter = chapterData.nextChapter;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gray-950 py-6 border-b border-gray-800">
+      <div className="bg-card py-6 border-b border-border">
         <div className="container mx-auto px-4">
           {/* Chapter Title */}
           <h1 className="text-2xl md:text-3xl font-bold text-white text-center mb-4">
@@ -98,25 +119,43 @@ export default async function ChapterPage({
           </div>
 
           {/* Chapter Navigation */}
-          <div className="flex items-center justify-center gap-3">
-            <button className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded font-semibold transition-colors">
-              ← Previous
-            </button>
-            <select className="bg-white/20 text-white px-4 py-2 rounded font-semibold border-none outline-none">
-              <option className="bg-gray-800">Chapter 00</option>
-            </select>
-            <button className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded font-semibold transition-colors">
-              Next →
-            </button>
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            {prevChapter ? (
+              <Link
+                href={`/series/${encodeURIComponent(cleanSlug(slug))}/${encodeURIComponent(cleanSlug(prevChapter))}`}
+                className="bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2 rounded font-semibold transition-colors"
+              >
+                ← Previous
+              </Link>
+            ) : (
+              <button disabled className="bg-muted text-muted-foreground px-4 py-2 rounded font-semibold cursor-not-allowed">
+                ← Previous
+              </button>
+            )}
+            <div className="text-sm font-semibold text-foreground bg-background px-4 py-2 rounded border border-border">
+              {chapterTitle}
+            </div>
+            {nextChapter ? (
+              <Link
+                href={`/series/${encodeURIComponent(cleanSlug(slug))}/${encodeURIComponent(cleanSlug(nextChapter))}`}
+                className="bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2 rounded font-semibold transition-colors"
+              >
+                Next →
+              </Link>
+            ) : (
+              <button disabled className="bg-muted text-muted-foreground px-4 py-2 rounded font-semibold cursor-not-allowed">
+                Next →
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Chapter Images */}
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="space-y-0">
+        <div className="space-y-0 bg-card border border-border rounded-lg overflow-hidden">
           {images.map((imageUrl: string, idx: number) => (
-            <div key={idx} className="relative w-full">
+            <div key={idx} className="relative w-full bg-background">
               <img
                 src={imageUrl}
                 alt={`Page ${idx + 1}`}
@@ -129,18 +168,36 @@ export default async function ChapterPage({
 
         {/* Bottom Navigation */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button className="w-full sm:w-auto px-6 py-3 bg-secondary hover:bg-secondary/80 rounded-lg font-semibold transition-colors">
-            ← Previous Chapter
-          </button>
+          {prevChapter ? (
+            <Link
+              href={`/series/${encodeURIComponent(cleanSlug(slug))}/${encodeURIComponent(cleanSlug(prevChapter))}`}
+              className="w-full sm:w-auto px-6 py-3 bg-secondary hover:bg-secondary/80 text-foreground rounded-lg font-semibold transition-colors text-center"
+            >
+              ← Previous Chapter
+            </Link>
+          ) : (
+            <button disabled className="w-full sm:w-auto px-6 py-3 bg-muted text-muted-foreground rounded-lg font-semibold cursor-not-allowed">
+              ← Previous Chapter
+            </button>
+          )}
           <Link
             href={`/series/${encodeURIComponent(cleanSlug(slug))}`}
             className="w-full sm:w-auto px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground text-center rounded-lg font-semibold transition-colors"
           >
             Chapter List
           </Link>
-          <button className="w-full sm:w-auto px-6 py-3 bg-secondary hover:bg-secondary/80 rounded-lg font-semibold transition-colors">
-            Next Chapter →
-          </button>
+          {nextChapter ? (
+            <Link
+              href={`/series/${encodeURIComponent(cleanSlug(slug))}/${encodeURIComponent(cleanSlug(nextChapter))}`}
+              className="w-full sm:w-auto px-6 py-3 bg-secondary hover:bg-secondary/80 text-foreground rounded-lg font-semibold transition-colors text-center"
+            >
+              Next Chapter →
+            </Link>
+          ) : (
+            <button disabled className="w-full sm:w-auto px-6 py-3 bg-muted text-muted-foreground rounded-lg font-semibold cursor-not-allowed">
+              Next Chapter →
+            </button>
+          )}
         </div>
       </div>
     </div>

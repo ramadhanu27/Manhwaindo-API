@@ -9,6 +9,9 @@ interface Series {
   slug: string;
   image: string;
   type?: string;
+  synopsis?: string;
+  genres?: string[];
+  chapters?: Array<{ title: string }>;
 }
 
 interface HeroCarouselProps {
@@ -40,40 +43,77 @@ export default function HeroCarousel({ series }: HeroCarouselProps) {
   const currentSeries = series[currentIndex];
 
   return (
-    <div className="relative w-full h-[400px] md:h-[500px] rounded-xl overflow-hidden bg-muted">
+    <div className="relative w-full h-[400px] md:h-[500px] rounded-xl overflow-hidden bg-card border border-border">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
           src={currentSeries.image || '/placeholder.jpg'}
           alt={currentSeries.title}
           fill
-          className="object-cover"
+          className="object-cover blur-sm"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-card via-card/95 to-card/50" />
       </div>
 
       {/* Content */}
-      <div className="relative h-full flex items-end">
-        <div className="container mx-auto px-4 pb-12">
-          <div className="max-w-2xl">
-            {currentSeries.type && (
-              <span className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-sm font-medium mb-4">
-                {currentSeries.type}
-              </span>
-            )}
-            <h1 className="text-3xl md:text-5xl font-bold mb-4 line-clamp-2">
-              {currentSeries.title}
-            </h1>
-            <Link
-              href={`/series/${currentSeries.slug}`}
-              className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-colors"
-            >
-              Start Reading
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-              </svg>
-            </Link>
+      <div className="relative h-full flex items-center">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            {/* Left Content */}
+            <div className="max-w-xl">
+              {currentSeries.chapters && currentSeries.chapters.length > 0 && (
+                <p className="text-sm text-muted-foreground mb-2">
+                  {currentSeries.chapters[0]?.title}
+                </p>
+              )}
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 line-clamp-2">
+                {currentSeries.title}
+              </h1>
+              
+              {currentSeries.synopsis && (
+                <p className="text-sm md:text-base text-muted-foreground mb-4 line-clamp-3">
+                  {currentSeries.synopsis}
+                </p>
+              )}
+
+              {/* Genres */}
+              {currentSeries.genres && currentSeries.genres.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {currentSeries.genres.slice(0, 5).map((genre, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-xs font-medium"
+                    >
+                      {genre}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <Link
+                href={`/series/${currentSeries.slug}`}
+                className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-colors"
+              >
+                Start Reading
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
+              </Link>
+            </div>
+
+            {/* Right Cover Image */}
+            <div className="hidden md:flex justify-end">
+              <div className="relative w-48 h-64 rounded-lg overflow-hidden shadow-2xl">
+                <Image
+                  src={currentSeries.image || '/placeholder.jpg'}
+                  alt={currentSeries.title}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
