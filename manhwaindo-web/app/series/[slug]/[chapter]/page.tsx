@@ -71,8 +71,9 @@ export default async function ChapterPage({
   }
 
   const chapterTitle = chapterData.title || chapter.replace(/-/g, ' ');
-  const prevChapter = chapterData.prevChapter;
-  const nextChapter = chapterData.nextChapter;
+  // API returns prev/next in reverse order, so we swap them
+  const prevChapter = chapterData.nextChapter;
+  const nextChapter = chapterData.prevChapter;
 
   return (
     <div className="min-h-screen bg-background">
