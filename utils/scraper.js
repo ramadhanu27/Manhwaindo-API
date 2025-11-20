@@ -48,10 +48,12 @@ async function scrapeLatest(page = 1) {
         const chapters = [];
         uta.find('.luf ul li').each((j, li) => {
           const link = $(li).find('a');
+          const timeSpan = $(li).find('span');
           chapters.push({
             title: link.text().trim(),
             url: link.attr('href') || '',
-            slug: link.attr('href')?.replace(BASE_URL, '').replace('/', '') || ''
+            slug: link.attr('href')?.replace(BASE_URL, '').replace('/', '') || '',
+            time: timeSpan.text().trim() || ''
           });
         });
 
