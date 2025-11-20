@@ -17,9 +17,9 @@ export default async function Home() {
   const popularSeries = popularData.success ? popularData.data : [];
 
   return (
-    <div className="container mx-auto px-4 py-8" suppressHydrationWarning>
+    <div className="container mx-auto px-4 py-8">
       {/* Hero Carousel */}
-      <section className="mb-12" suppressHydrationWarning>
+      <section className="mb-12">
         <HeroCarousel series={popularSeries.slice(0, 4)} />
       </section>
 
