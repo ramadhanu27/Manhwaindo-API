@@ -411,10 +411,205 @@ async function scrapeSearch(query) {
   }
 }
 
+/**
+ * Scrape project updates from homepage "Project Update" section
+ */
+async function scrapeProjectUpdates(page = 1) {
+  try {
+    // Project Update only available on homepage (page 1)
+    if (page > 1) {
+      return {
+        success: true,
+        page,
+        data: []
+      };
+    }
+
+    const url = BASE_URL;
+    const $ = await fetchHTML(url);
+    const manhwaList = [];
+
+    // Find "Project Update" heading and get items from next section
+    let projectSection = null;
+    $('h2, h3').each((i, elem) => {
+      if ($(elem).text().trim() === 'Project Update') {
+        projectSection = $(elem).parent().next('.listupd');
+        return false; // break
+      }
+    });
+
+    if (projectSection) {
+      // Scrape from Project Update section (.utao structure)
+      projectSection.find('.utao').each((i, elem) => {
+        const uta = $(elem).find('.uta');
+        const title = uta.find('.luf h4').text().trim();
+        const url = uta.find('a.series').attr('href') || '';
+        const slug = url.replace(BASE_URL, '').replace('/series/', '').replace('/', '') || '';
+        const image = uta.find('.imgu img').attr('src') || '';
+        const type = 'Manhwa';
+        const rating = '';
+
+        // Get chapters with time
+        const chapters = [];
+        uta.find('.luf ul li').each((j, li) => {
+          const link = $(li).find('a');
+          const timeSpan = $(li).find('span');
+          chapters.push({
+            title: link.text().trim(),
+            url: link.attr('href') || '',
+            slug: link.attr('href')?.replace(BASE_URL, '').replace('/', '') || '',
+            time: timeSpan.text().trim() || ''
+          });
+        });
+
+        manhwaList.push({
+          title,
+          slug,
+          image,
+          type,
+          rating,
+          url,
+          chapters
+        });
+      });
+    }
+
+    return {
+      success: true,
+      page,
+      data: manhwaList
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message
+    };
+  }
+}
+
+/**
+ * Scrape last update from homepage "Latest Update" section
+ */
+async function scrapeLastUpdate(page = 1) {
+  try {
+    // For page 1, use homepage Latest Update section. For other pages, use /series/?order=update
+    const url = page === 1 ? BASE_URL : `${BASE_URL}/series/?page=${page}&order=update`;
+    const $ = await fetchHTML(url);
+    const manhwaList = [];
+
+    if (page === 1) {
+      // Find "Latest Update" heading and get items from next section
+      let latestSection = null;
+      $('h2, h3').each((i, elem) => {
+        if ($(elem).text().trim() === 'Latest Update') {
+          latestSection = $(elem).parent().next('.listupd');
+          return false; // break
+        }
+      });
+
+      if (latestSection) {
+        // Scrape from Latest Update section (.utao structure) - has time information
+        latestSection.find('.utao').each((i, elem) => {
+          const uta = $(elem).find('.uta');
+          const title = uta.find('.luf h4').text().trim();
+          const url = uta.find('a.series').attr('href') || '';
+          const slug = url.replace(BASE_URL, '').replace('/series/', '').replace('/', '') || '';
+          const image = uta.find('.imgu img').attr('src') || '';
+          const type = 'Manhwa';
+          const rating = '';
+
+          // Get chapters with time
+          const chapters = [];
+          uta.find('.luf ul li').each((j, li) => {
+            const link = $(li).find('a');
+            const timeSpan = $(li).find('span');
+            chapters.push({
+              title: link.text().trim(),
+              url: link.attr('href') || '',
+              slug: link.attr('href')?.replace(BASE_URL, '').replace('/', '') || '',
+              time: timeSpan.text().trim() || ''
+            });
+          });
+
+          manhwaList.push({
+            title,
+            slug,
+            image,
+            type,
+            rating,
+            url,
+            chapters
+          });
+        });
+      }
+    } else {
+      // Scrape from Series List (.bsx structure) - no time information
+      $('.bsx').each((i, elem) => {
+        const title = $(elem).find('.tt').text().trim();
+        const slug = $(elem).find('a').attr('href')?.replace(BASE_URL, '').replace('/series/', '').replace('/', '') || '';
+        const image = $(elem).find('img').attr('src') || '';
+        const type = $(elem).find('.type').text().trim();
+        const rating = $(elem).find('.numscore').text().trim();
+        
+        // Get latest chapters
+        const chapters = [];
+        const epxs = $(elem).find('.epxs').text().trim();
+        if (epxs) {
+          // Generate chapter slug from title
+          const chapterSlug = epxs.toLowerCase().replace(/\s+/g, '-');
+          const fullSlug = slug ? `${slug}-${chapterSlug}` : chapterSlug;
+          
+          chapters.push({
+            title: epxs,
+            url: `${BASE_URL}/${fullSlug}/`,
+            slug: fullSlug,
+            time: ''
+          });
+        }
+        
+        $(elem).find('.eph-num a').each((j, chap) => {
+          const chapterUrl = $(chap).attr('href') || '';
+          const chapterSlug = chapterUrl.replace(BASE_URL, '').replace(/^\//, '').replace(/\/$/, '');
+          
+          chapters.push({
+            title: $(chap).text().trim(),
+            url: chapterUrl,
+            slug: chapterSlug,
+            time: ''
+          });
+        });
+
+        manhwaList.push({
+          title,
+          slug,
+          image,
+          type,
+          rating,
+          url: `${BASE_URL}/series/${slug}/`,
+          chapters
+        });
+      });
+    }
+
+    return {
+      success: true,
+      page,
+      data: manhwaList
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message
+    };
+  }
+}
+
 module.exports = {
   scrapeLatest,
   scrapePopular,
   scrapeDetail,
   scrapeChapter,
-  scrapeSearch
+  scrapeSearch,
+  scrapeProjectUpdates,
+  scrapeLastUpdate
 };

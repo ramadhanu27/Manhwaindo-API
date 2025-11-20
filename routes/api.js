@@ -5,7 +5,9 @@ const {
   scrapePopular,
   scrapeDetail,
   scrapeChapter,
-  scrapeSearch
+  scrapeSearch,
+  scrapeProjectUpdates,
+  scrapeLastUpdate
 } = require('../utils/scraper');
 
 /**
@@ -18,7 +20,8 @@ router.get('/', (req, res) => {
     message: 'Manhwaindo API',
     version: '1.0.0',
     endpoints: {
-      latest: '/api/latest?page=1',
+      project: '/api/project?page=1 (Project Updates)',
+      lastupdate: '/api/lastupdate?page=1 (Latest Update)',
       popular: '/api/popular',
       detail: '/api/series/:slug',
       chapter: '/api/chapter/:slug',
@@ -28,13 +31,30 @@ router.get('/', (req, res) => {
 });
 
 /**
- * GET /api/latest
- * Get latest manhwa updates
+ * GET /api/project
+ * Get project updates (from homepage Project Update section)
  */
-router.get('/latest', async (req, res) => {
+router.get('/project', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const result = await scrapeLatest(page);
+    const result = await scrapeProjectUpdates(page);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/lastupdate
+ * Get last updates (from /series/?order=update)
+ */
+router.get('/lastupdate', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const result = await scrapeLastUpdate(page);
     res.json(result);
   } catch (error) {
     res.status(500).json({
