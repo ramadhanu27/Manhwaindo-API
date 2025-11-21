@@ -666,6 +666,62 @@ async function scrapeLastUpdate(page = 1) {
   }
 }
 
+/**
+ * Scrape series list from /series page with filters
+ * @param {number} page - Page number
+ * @param {object} filters - Filter options { order, type, status, genre }
+ */
+async function scrapeSeriesList(page = 1, filters = {}) {
+  try {
+    // Build URL with filters
+    const params = new URLSearchParams();
+    params.append('page', page);
+    
+    // Add filters
+    if (filters.order) params.append('order', filters.order); // update, popular, latest, title
+    if (filters.type) params.append('type', filters.type); // manhwa, manhua, manga
+    if (filters.status) params.append('status', filters.status); // ongoing, completed, hiatus
+    if (filters.genre) params.append('genre', filters.genre); // action, romance, etc
+    
+    const url = `${BASE_URL}/series/?${params.toString()}`;
+    const $ = await fetchHTML(url);
+    const seriesList = [];
+
+    // Scrape from series grid (.bsx structure)
+    $('.bsx').each((i, elem) => {
+      const title = $(elem).find('.tt').text().trim();
+      const slug = $(elem).find('a').attr('href')?.replace(BASE_URL, '').replace('/series/', '').replace(/\//g, '') || '';
+      const image = $(elem).find('img').attr('src') || '';
+      const type = $(elem).find('.type').text().trim();
+      const rating = $(elem).find('.numscore').text().trim();
+      const latestChapter = $(elem).find('.epxs').text().trim();
+
+      seriesList.push({
+        title,
+        slug,
+        image,
+        type,
+        rating,
+        latestChapter,
+        url: `${BASE_URL}/series/${slug}/`
+      });
+    });
+
+    return {
+      success: true,
+      page,
+      filters,
+      totalSeries: seriesList.length,
+      data: seriesList
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message
+    };
+  }
+}
+
 module.exports = {
   scrapeLatest,
   scrapePopular,
@@ -673,5 +729,6 @@ module.exports = {
   scrapeChapter,
   scrapeSearch,
   scrapeProjectUpdates,
-  scrapeLastUpdate
+  scrapeLastUpdate,
+  scrapeSeriesList
 };

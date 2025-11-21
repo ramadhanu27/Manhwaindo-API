@@ -7,7 +7,8 @@ const {
   scrapeChapter,
   scrapeSearch,
   scrapeProjectUpdates,
-  scrapeLastUpdate
+  scrapeLastUpdate,
+  scrapeSeriesList
 } = require('../utils/scraper');
 
 /**
@@ -23,6 +24,7 @@ router.get('/', (req, res) => {
       project: '/api/project?page=1 (Project Updates)',
       lastupdate: '/api/lastupdate?page=1 (Latest Update)',
       popular: '/api/popular',
+      seriesList: '/api/series-list?page=1 (All Series List)',
       detail: '/api/series/:slug',
       chapter: '/api/chapter/:slug',
       search: '/api/search?q=query'
@@ -55,6 +57,31 @@ router.get('/lastupdate', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const result = await scrapeLastUpdate(page);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/series-list
+ * Get all series list with pagination and filters
+ * Query params: page, order, type, status, genre
+ */
+router.get('/series-list', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const filters = {
+      order: req.query.order,    // update, popular, latest, title
+      type: req.query.type,      // manhwa, manhua, manga
+      status: req.query.status,  // ongoing, completed, hiatus
+      genre: req.query.genre     // action, romance, fantasy, etc
+    };
+    
+    const result = await scrapeSeriesList(page, filters);
     res.json(result);
   } catch (error) {
     res.status(500).json({
