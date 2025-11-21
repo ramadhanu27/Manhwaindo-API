@@ -12,16 +12,17 @@ Express.js API scraper untuk [manhwaindo.app](https://manhwaindo.app) dengan cac
 
 ## 🚀 Fitur
 
-- ✅ Mendapatkan daftar manhwa terbaru dengan pagination
-- ✅ Mendapatkan manhwa populer real-time
-- ✅ Mendapatkan detail manhwa lengkap dengan metadata
-- ✅ Mendapatkan gambar chapter berkualitas tinggi
-- ✅ Pencarian manhwa yang powerful
-- ✅ CORS enabled untuk akses cross-origin
-- ✅ Error handling yang robust
-- ✅ Intelligent caching (10 menit TTL)
-- ✅ Real-time status monitoring
-- ✅ Deployed di Netlify Functions (Serverless)
+- ✅ **Project Updates** - Manhwa dengan update terbaru (dengan waktu rilis)
+- ✅ **Latest Update** - Daftar manhwa yang baru diupdate
+- ✅ **Popular Manhwa** - Manhwa populer real-time
+- ✅ **Series List** - Daftar semua series dengan filter (order, type, status, genre)
+- ✅ **Series Detail** - Detail lengkap dengan metadata dan dynamic view counter
+- ✅ **Chapter Images** - Gambar chapter dengan navigasi prev/next
+- ✅ **Search** - Pencarian manhwa yang powerful
+- ✅ **CORS Enabled** - Akses cross-origin
+- ✅ **Intelligent Caching** - 10 menit TTL
+- ✅ **Error Handling** - Robust error handling
+- ✅ **Serverless Ready** - Deployed di Netlify Functions
 
 ## 🌐 Live Demo
 
@@ -70,19 +71,23 @@ BASE_URL=https://manhwaindo.app
 ## 📚 API Endpoints
 
 ### 1. API Info
+
 ```
 GET /api
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
   "message": "Manhwaindo API",
   "version": "1.0.0",
   "endpoints": {
-    "latest": "/api/latest?page=1",
+    "project": "/api/project?page=1 (Project Updates)",
+    "lastupdate": "/api/lastupdate?page=1 (Latest Update)",
     "popular": "/api/popular",
+    "seriesList": "/api/series-list?page=1 (All Series List)",
     "detail": "/api/series/:slug",
     "chapter": "/api/chapter/:slug",
     "search": "/api/search?q=query"
@@ -90,32 +95,36 @@ GET /api
 }
 ```
 
-### 2. Latest Updates
+### 2. Project Updates
+
 ```
-GET /api/latest?page=1
+GET /api/project?page=1
 ```
 
 **Parameters:**
-- `page` (optional): Nomor halaman (default: 1)
+
+- `page` (optional): Nomor halaman (default: 1, max: 1)
 
 **Response:**
+
 ```json
 {
   "success": true,
   "page": 1,
   "data": [
     {
-      "title": "Doctor's Rebirth ID",
-      "slug": "doctors-rebirth-id",
+      "title": "Surviving the Cataclysm",
+      "slug": "surviving-the-cataclysm",
       "image": "https://...",
       "type": "Manhwa",
-      "rating": "8.5",
-      "url": "https://manhwaindo.app/series/doctors-rebirth-id/",
+      "rating": "",
+      "url": "https://manhwaindo.app/series/surviving-the-cataclysm/",
       "chapters": [
         {
-          "title": "Ch. 210",
-          "url": "https://manhwaindo.app/doctors-rebirth-id-chapter-210/",
-          "slug": "doctors-rebirth-id-chapter-210"
+          "title": "Ch. 12",
+          "url": "https://manhwaindo.app/surviving-the-cataclysm-chapter-12/",
+          "slug": "surviving-the-cataclysm-chapter-12",
+          "time": "7 jam ago"
         }
       ]
     }
@@ -123,12 +132,51 @@ GET /api/latest?page=1
 }
 ```
 
-### 3. Popular Manhwa
+### 3. Latest Update
+
+```
+GET /api/lastupdate?page=1
+```
+
+**Parameters:**
+
+- `page` (optional): Nomor halaman (default: 1)
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "page": 1,
+  "data": [
+    {
+      "title": "Momose Akira no Hatsukoi Hatan-chuu",
+      "slug": "momose-akira-no-hatsukoi-hatan-chuu",
+      "image": "https://...",
+      "type": "Manhwa",
+      "rating": "",
+      "url": "https://manhwaindo.app/series/momose-akira-no-hatsukoi-hatan-chuu/",
+      "chapters": [
+        {
+          "title": "Ch. 24",
+          "url": "https://...",
+          "slug": "momose-akira-no-hatsukoi-hatan-chuu-chapter-24",
+          "time": "2 menit ago"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 4. Popular Manhwa
+
 ```
 GET /api/popular
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -146,110 +194,163 @@ GET /api/popular
 }
 ```
 
-### 4. Series Detail
-```
-GET /api/series/:slug
-```
+### 5. Series List (dengan Filter)
 
-**Example:**
 ```
-GET /api/series/doctors-rebirth-id
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "title": "Doctor's Rebirth ID",
-    "alternativeTitle": "의사생활",
-    "slug": "doctors-rebirth-id",
-    "image": "https://...",
-    "rating": "8.5",
-    "type": "Manhwa",
-    "status": "Ongoing",
-    "synopsis": "...",
-    "genres": ["Action", "Fantasy", "Medical"],
-    "url": "https://manhwaindo.app/series/doctors-rebirth-id/",
-    "chapters": [
-      {
-        "title": "Chapter 210",
-        "slug": "doctors-rebirth-id-chapter-210",
-        "url": "https://manhwaindo.app/doctors-rebirth-id-chapter-210/",
-        "releaseDate": "13 menit ago"
-      }
-    ]
-  }
-}
-```
-
-### 5. Chapter Images
-```
-GET /api/chapter/:slug
-```
-
-**Example:**
-```
-GET /api/chapter/doctors-rebirth-id-chapter-210
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "title": "Doctor's Rebirth ID Chapter 210",
-    "slug": "doctors-rebirth-id-chapter-210",
-    "images": [
-      "https://...",
-      "https://..."
-    ],
-    "prevChapter": "doctors-rebirth-id-chapter-209",
-    "nextChapter": null,
-    "totalImages": 45
-  }
-}
-```
-
-### 6. Search
-```
-GET /api/search?q=query
+GET /api/series-list?page=1&order=update&type=manhwa&status=ongoing
 ```
 
 **Parameters:**
-- `q` (required): Kata kunci pencarian
 
-**Example:**
-```
-GET /api/search?q=doctor
-```
+- `page` (optional): Nomor halaman (default: 1, max: 227)
+- `order` (optional): Urutan (update, popular, latest, title)
+- `type` (optional): Tipe (manhwa, manhua, manga)
+- `status` (optional): Status (ongoing, completed, hiatus)
+
+**Note:** Genre filter tidak tersedia di endpoint ini. Gunakan `/api/genres` untuk mendapatkan daftar genre.
 
 **Response:**
+
 ```json
 {
   "success": true,
-  "query": "doctor",
+  "page": 1,
+  "filters": {
+    "order": "update",
+    "type": "manhwa",
+    "status": "ongoing"
+  },
+  "totalSeries": 24,
   "data": [
     {
-      "title": "Doctor's Rebirth ID",
-      "slug": "doctors-rebirth-id",
+      "title": "Solo Leveling",
+      "slug": "solo-leveling",
       "image": "https://...",
       "type": "Manhwa",
-      "rating": "8.5",
-      "url": "https://manhwaindo.app/series/doctors-rebirth-id/"
+      "rating": "9.8",
+      "latestChapter": "Chapter 179",
+      "url": "https://manhwaindo.app/series/solo-leveling/"
     }
   ]
 }
 ```
 
+### 6. Genres List
+
+```
+GET /api/genres
+```
+
+**Description:** Mendapatkan daftar semua genre yang tersedia beserta ID-nya.
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "totalGenres": 224,
+  "data": [
+    {
+      "id": "2",
+      "name": "Action",
+      "slug": "action"
+    },
+    {
+      "id": "17",
+      "name": "Romance",
+      "slug": "romance"
+    },
+    {
+      "id": "23",
+      "name": "Fantasy",
+      "slug": "fantasy"
+    }
+  ]
+}
+```
+
+### 7. Series Detail
+
+```
+GET /api/series/:slug
+```
+
+**Example:**
+
+```
+GET /api/series/solo-leveling
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "title": "Solo Leveling",
+    "alternativeTitle": "나 혼자만 레벨업",
+    "slug": "solo-leveling",
+    "image": "https://...",
+    "rating": "9.8",
+    "status": "Completed",
+    "type": "Manhwa",
+    "released": "2018",
+    "author": "Chugong",
+    "artist": "DUBU (REDICE STUDIO)",
+    "postedBy": "Ramadhanu",
+    "postedOn": "November 19, 2024",
+    "updatedOn": "November 19, 2024",
+    "views": "1.2M",
+    "followers": "15K",
+    "synopsis": "...",
+    "genres": ["Action", "Adventure", "Fantasy"],
+    "url": "https://manhwaindo.app/series/solo-leveling/",
+    "totalChapters": 179,
+    "chapters": [
+      {
+        "title": "Chapter 179",
+        "slug": "solo-leveling-chapter-179",
+        "url": "https://manhwaindo.app/solo-leveling-chapter-179/",
+        "releaseDate": "13 menit ago"
+      }
+
+- `q` (required): Kata kunci pencarian
+
+**Example:**
+
+```
+
+GET /api/search?q=solo
+
+````
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "query": "solo",
+  "data": [
+    {
+      "title": "Solo Leveling",
+      "slug": "solo-leveling",
+      "image": "https://...",
+      "type": "Manhwa",
+      "rating": "9.8",
+      "url": "https://manhwaindo.app/series/solo-leveling/"
+    }
+  ]
+}
+````
+
 ## 🛠️ Tech Stack
 
 - **Express.js** - Web framework
-- **Axios** - HTTP client
+- **Axios** - HTTP client untuk scraping
 - **Cheerio** - HTML parser
 - **CORS** - Cross-origin resource sharing
 - **Dotenv** - Environment variables
-- **Node-Cache** - In-memory caching
+- **Node-Cache** - In-memory caching (10 menit TTL)
 - **Serverless-HTTP** - Netlify Functions adapter
 - **Netlify Functions** - Serverless deployment
 
@@ -279,8 +380,39 @@ GET /api/search?q=doctor
 │   Manhwaindo.app (Target)           │
 │   - Web Scraping                    │
 │   - Data Extraction                 │
+│   - Dynamic View Counter (AJAX)     │
 └─────────────────────────────────────┘
 ```
+
+## ✨ Fitur Unggulan
+
+### 1. Dynamic View Counter
+
+API menggunakan AJAX request ke `admin-ajax.php` untuk mendapatkan view count yang akurat secara real-time.
+
+### 2. Intelligent Chapter Navigation
+
+Triple fallback system untuk mendapatkan prev/next chapter:
+
+- **Method 1:** Breadcrumb link extraction
+- **Method 2:** Title parsing (untuk series tanpa breadcrumb)
+- **Method 3:** Slug pattern extraction
+
+### 3. Advanced Filtering
+
+Series list mendukung multiple filter:
+
+- Order by: update, popular, latest, title
+- Type: manhwa, manhua, manga
+- Status: ongoing, completed, hiatus
+- Genre: action, romance, fantasy, dll
+
+### 4. Caching Strategy
+
+- Cache duration: 10 menit
+- Automatic cache invalidation
+- Reduced server load
+- Faster response time
 
 ## 📝 Notes
 
@@ -289,39 +421,50 @@ GET /api/search?q=doctor
 - Response time tergantung kecepatan website target
 - Caching otomatis 10 menit untuk mengurangi beban server
 - Semua request di-log untuk monitoring
+- View counter menggunakan dynamic AJAX request
+- Chapter navigation support untuk semua series
 
 ## 🔐 Rate Limiting
 
 Untuk production, disarankan menggunakan rate limiting middleware:
 
 ```javascript
-const rateLimit = require('express-rate-limit');
+const rateLimit = require("express-rate-limit");
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 menit
-  max: 100 // limit 100 requests per windowMs
+  max: 100, // limit 100 requests per windowMs
 });
 
-app.use('/api/', limiter);
+app.use("/api/", limiter);
 ```
 
 ## 🐛 Troubleshooting
 
 **Error: "Cannot find module"**
+
 ```bash
 npm install
 ```
 
 **Port already in use**
+
 ```bash
 # Ubah PORT di .env atau gunakan port lain
 PORT=3001 npm start
 ```
 
 **API tidak merespons**
+
 - Pastikan internet connection aktif
 - Cek apakah manhwaindo.app masih online
 - Lihat console logs untuk error details
+
+**Chapter navigation null**
+
+- API menggunakan triple fallback system
+- Jika semua method gagal, prev/next akan null
+- Biasanya terjadi pada chapter yang baru atau struktur HTML berbeda
 
 ## 📞 Support & Contact
 
