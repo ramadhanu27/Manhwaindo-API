@@ -137,6 +137,62 @@
     <section id="endpoints" class="py-16">
         <div class="container mx-auto px-4 md:px-6 max-w-5xl space-y-12">
 
+            <!-- Endpoint 0: API Info -->
+            <div
+                class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                        <a href="/api" target="_blank"
+                            class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                            /api
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                            </svg>
+                        </a>
+                    </div>
+
+                    <!-- Realtime Status Badge -->
+                    <div id="status-api"
+                        class="flex items-center gap-2 text-xs font-mono bg-slate-800/50 border border-slate-700/50 px-3 py-1.5 rounded-full transition-all">
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+                        </span>
+                        <span class="text-slate-400">Checking...</span>
+                    </div>
+                </div>
+
+                <p class="mb-6 text-slate-400">Get API information and list of all available endpoints.</p>
+
+                <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                    <button onclick="copyToClipboard(this)"
+                        class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                    <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="json-key">"response"</span>: {
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"message"</span>: <span class="json-string">"Manhwaindo API"</span>,
+  <span class="json-key">"version"</span>: <span class="json-string">"1.0.0"</span>,
+  <span class="json-key">"endpoints"</span>: {
+    <span class="json-key">"project"</span>: <span class="json-string">"/api/project?page=1"</span>,
+    <span class="json-key">"lastupdate"</span>: <span class="json-string">"/api/lastupdate?page=1"</span>,
+    <span class="json-key">"popular"</span>: <span class="json-string">"/api/popular"</span>,
+    <span class="json-key">"seriesList"</span>: <span class="json-string">"/api/series-list?page=1"</span>,
+    <span class="json-key">"detail"</span>: <span class="json-string">"/api/series/:slug"</span>,
+    <span class="json-key">"chapter"</span>: <span class="json-string">"/api/chapter/:slug"</span>,
+    <span class="json-key">"search"</span>: <span class="json-string">"/api/search?q=query"</span>
+  }
+}</code></pre>
+                </div>
+            </div>
+
             <!-- Endpoint 1: Project Updates -->
             <div
                 class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
@@ -282,7 +338,64 @@
                 </div>
             </div>
 
-            <!-- Endpoint 5: Series List with Filters -->
+            <!-- Endpoint 5: Genres -->
+            <div
+                class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                        <a href="/api/genres" target="_blank"
+                            class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                            /api/genres
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                            </svg>
+                        </a>
+                    </div>
+
+                    <!-- Realtime Status Badge -->
+                    <div id="status-genres"
+                        class="flex items-center gap-2 text-xs font-mono bg-slate-800/50 border border-slate-700/50 px-3 py-1.5 rounded-full transition-all">
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+                        </span>
+                        <span class="text-slate-400">Checking...</span>
+                    </div>
+                </div>
+
+                <p class="mb-6 text-slate-400">Get all available genres from the website.</p>
+
+                <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                    <button onclick="copyToClipboard(this)"
+                        class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                    <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/genres"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="json-key">"response"</span>: {
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"data"</span>: [
+    {
+      <span class="json-key">"id"</span>: <span class="json-string">"action"</span>,
+      <span class="json-key">"name"</span>: <span class="json-string">"Action"</span>,
+      <span class="json-key">"url"</span>: <span class="json-string">"https://manhwaindo.app/genre/action/"</span>
+    },
+    {
+      <span class="json-key">"id"</span>: <span class="json-string">"romance"</span>,
+      <span class="json-key">"name"</span>: <span class="json-string">"Romance"</span>,
+      <span class="json-key">"url"</span>: <span class="json-string">"https://manhwaindo.app/genre/romance/"</span>
+    }
+  ]
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- Endpoint 6: Series List with Filters -->
             <div
                 class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
                 <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -552,9 +665,11 @@
 
         // Check status on load
         document.addEventListener('DOMContentLoaded', () => {
+            checkEndpointStatus('/api', 'status-api');
             checkEndpointStatus('/api/project?page=1', 'status-project');
             checkEndpointStatus('/api/lastupdate?page=1', 'status-lastupdate');
             checkEndpointStatus('/api/popular', 'status-popular');
+            checkEndpointStatus('/api/genres', 'status-genres');
             checkEndpointStatus('/api/series-list?page=1', 'status-serieslist');
             checkEndpointStatus('/api/series/solo-leveling', 'status-series');
             checkEndpointStatus('/api/chapter/solo-leveling-chapter-1', 'status-chapter');
