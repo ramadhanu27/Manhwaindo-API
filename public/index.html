@@ -135,7 +135,7 @@
 
     <!-- Documentation Section -->
     <section id="endpoints" class="py-16">
-        <div class="container mx-auto px-4 md:px-6 max-w-5xl space-y-12">
+        <div class="container mx-auto px-4 md:px-6 max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8">
 
             <!-- Endpoint 0: API Info -->
             <div
@@ -602,6 +602,152 @@
                 </div>
             </div>
 
+            <!-- Endpoint 8: Download Chapter as ZIP -->
+            <div
+                class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                        <a href="/api/download/the-solo-leveling-id-chapter-00/" target="_blank"
+                            class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                            /api/download/:slug
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                            </svg>
+                        </a>
+                    </div>
+
+                    <!-- Realtime Status Badge -->
+                    <div id="status-download"
+                        class="flex items-center gap-2 text-xs font-mono bg-slate-800/50 border border-slate-700/50 px-3 py-1.5 rounded-full transition-all">
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+                        </span>
+                        <span class="text-slate-400">Checking...</span>
+                    </div>
+                </div>
+                <p class="mb-6 text-slate-400">Download all images from a chapter as a compressed ZIP file with automatic image naming.</p>
+
+                <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                    <button onclick="copyToClipboard(this)"
+                        class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                    <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/download/solo-leveling-chapter-1"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="text-slate-500">// Returns ZIP file with images named: 001.jpg, 002.jpg, etc.</span>
+<span class="text-slate-500">// Content-Type: application/zip</span>
+<span class="text-slate-500">// Content-Disposition: attachment; filename="solo-leveling-chapter-1.zip"</span></code></pre>
+                </div>
+            </div>
+
+            <!-- Endpoint 9: Download Multiple Chapters as ZIP -->
+            <div
+                class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="inline-flex w-fit items-center rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-sm font-bold text-emerald-400 font-mono">POST</span>
+                        <a href="#"
+                            class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                            /api/download-multiple
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                            </svg>
+                        </a>
+                    </div>
+
+                    <!-- Realtime Status Badge -->
+                    <div id="status-downloadmultiple"
+                        class="flex items-center gap-2 text-xs font-mono bg-slate-800/50 border border-slate-700/50 px-3 py-1.5 rounded-full transition-all">
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+                        </span>
+                        <span class="text-slate-400">Checking...</span>
+                    </div>
+                </div>
+                <p class="mb-6 text-slate-400">Download multiple chapters as a single ZIP file with each chapter in its own folder.</p>
+
+                <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                    <button onclick="copyToClipboard(this)"
+                        class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                    <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"method"</span>: <span class="json-string">"POST"</span>,
+<span class="json-key">"url"</span>: <span class="json-string">"/api/download-multiple"</span>,
+<span class="json-key">"body"</span>: {
+  <span class="json-key">"slugs"</span>: [
+    <span class="json-string">"solo-leveling-chapter-1"</span>,
+    <span class="json-string">"solo-leveling-chapter-2"</span>,
+    <span class="json-string">"solo-leveling-chapter-3"</span>
+  ]
+}
+
+<span class="text-slate-500">// Response</span>
+<span class="text-slate-500">// Returns ZIP file with structure:</span>
+<span class="text-slate-500">// chapters-{timestamp}.zip</span>
+<span class="text-slate-500">// ├── solo-leveling-chapter-1/</span>
+<span class="text-slate-500">//     ├── 001.jpg</span>
+<span class="text-slate-500">//     ├── 002.jpg</span>
+<span class="text-slate-500">// ├── solo-leveling-chapter-2/</span>
+<span class="text-slate-500">//     ├── 001.jpg</span>
+<span class="text-slate-500">//     ├── 002.jpg</span></code></pre>
+                </div>
+            </div>
+
+            <!-- Endpoint 10: Download Chapter as PDF -->
+            <div
+                class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                        <a href="/api/download-pdf/solo-leveling-chapter-1" target="_blank"
+                            class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                            /api/download-pdf/:slug
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                            </svg>
+                        </a>
+                    </div>
+
+                    <!-- Realtime Status Badge -->
+                    <div id="status-downloadpdf"
+                        class="flex items-center gap-2 text-xs font-mono bg-slate-800/50 border border-slate-700/50 px-3 py-1.5 rounded-full transition-all">
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+                        </span>
+                        <span class="text-slate-400">Checking...</span>
+                    </div>
+                </div>
+                <p class="mb-6 text-slate-400">Download all images from a chapter as a single PDF file with automatic page sizing.</p>
+
+                <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                    <button onclick="copyToClipboard(this)"
+                        class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                    <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/download-pdf/solo-leveling-chapter-1"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="text-slate-500">// Returns PDF file with all chapter images stacked vertically</span>
+<span class="text-slate-500">// Content-Type: application/pdf</span>
+<span class="text-slate-500">// Content-Disposition: attachment; filename="solo-leveling-chapter-1.pdf"</span>
+<span class="text-slate-500">// Page size: A4 with auto-scaling for image width</span></code></pre>
+                </div>
+            </div>
+
         </div>
     </section>
 
@@ -674,6 +820,10 @@
             checkEndpointStatus('/api/series/solo-leveling', 'status-series');
             checkEndpointStatus('/api/chapter/solo-leveling-chapter-1', 'status-chapter');
             checkEndpointStatus('/api/search?q=solo', 'status-search');
+            // Skip download endpoints to avoid automatic downloads on page load
+            // checkEndpointStatus('/api/download/solo-leveling-chapter-1', 'status-download');
+            // checkEndpointStatus('/api/download-multiple', 'status-downloadmultiple');
+            // checkEndpointStatus('/api/download-pdf/solo-leveling-chapter-1', 'status-downloadpdf');
         });
     </script>
 </body>
