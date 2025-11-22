@@ -345,8 +345,11 @@ async function scrapeChapter(slug) {
     const images = [];
 
     $("#readerarea img").each((i, elem) => {
-      const imgSrc = $(elem).attr("src") || "";
+      let imgSrc = $(elem).attr("src") || "";
       if (imgSrc) {
+        // Fix URL format - replace triple slash with double slash
+        imgSrc = imgSrc.replace(/^https:\/\/\//, "https://");
+        imgSrc = imgSrc.replace(/^http:\/\/\//, "http://");
         images.push(imgSrc);
       }
     });

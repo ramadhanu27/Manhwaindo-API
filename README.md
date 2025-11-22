@@ -15,9 +15,12 @@ Express.js API scraper untuk [manhwaindo.app](https://manhwaindo.app) dengan cac
 - ✅ **Project Updates** - Manhwa dengan update terbaru (dengan waktu rilis)
 - ✅ **Latest Update** - Daftar manhwa yang baru diupdate
 - ✅ **Popular Manhwa** - Manhwa populer real-time
-- ✅ **Series List** - Daftar semua series dengan filter (order, type, status, genre)
+- ✅ **Series List** - Daftar semua series dengan filter (order, type, status)
+- ✅ **Genres List** - Daftar semua genre yang tersedia
 - ✅ **Series Detail** - Detail lengkap dengan metadata dan dynamic view counter
 - ✅ **Chapter Images** - Gambar chapter dengan navigasi prev/next
+- ✅ **Download ZIP** - Download chapter sebagai file ZIP
+- ✅ **Download PDF** - Download chapter sebagai file PDF
 - ✅ **Search** - Pencarian manhwa yang powerful
 - ✅ **CORS Enabled** - Akses cross-origin
 - ✅ **Intelligent Caching** - 10 menit TTL
@@ -343,6 +346,110 @@ GET /api/search?q=solo
 }
 ````
 
+## 📥 Download Chapter
+
+API menyediakan 2 format download untuk chapter: **ZIP** dan **PDF**.
+
+### Download as ZIP
+
+```
+GET /api/download/:slug
+```
+
+**Description:** Download semua gambar chapter dalam 1 file ZIP.
+
+**Example:**
+
+```
+GET /api/download/the-solo-leveling-id-chapter-00
+```
+
+**Response:**
+
+- **Content-Type:** `application/zip`
+- **File:** `the-solo-leveling-id-chapter-00.zip`
+- **Isi:** Gambar dengan nama urut (001.jpg, 002.jpg, ...)
+
+**Fitur:**
+
+- ✅ Kompresi maksimal (level 9)
+- ✅ Gambar diberi nama berurutan
+- ✅ Error handling untuk gambar yang gagal
+- ✅ Timeout 30 detik per gambar
+
+### Download as PDF
+
+```
+GET /api/download-pdf/:slug
+```
+
+**Description:** Download semua gambar chapter dalam 1 file PDF.
+
+**Example:**
+
+```
+GET /api/download-pdf/the-solo-leveling-id-chapter-00
+```
+
+**Response:**
+
+- **Content-Type:** `application/pdf`
+- **File:** `the-solo-leveling-id-chapter-00.pdf`
+- **Isi:** PDF dengan 1 gambar per halaman
+
+**Fitur:**
+
+- ✅ Setiap gambar = 1 halaman PDF
+- ✅ Ukuran halaman menyesuaikan ukuran gambar
+- ✅ Kualitas gambar original (tidak dikompres)
+- ✅ Perfect untuk dibaca di e-reader
+
+### Frontend Implementation
+
+**HTML Button:**
+
+```html
+<!-- Download ZIP -->
+<button onclick="downloadZIP('the-solo-leveling-id-chapter-00')">📦 Download ZIP</button>
+
+<!-- Download PDF -->
+<button onclick="downloadPDF('the-solo-leveling-id-chapter-00')">📄 Download PDF</button>
+```
+
+**JavaScript:**
+
+```javascript
+function downloadZIP(chapterSlug) {
+  window.location.href = `/api/download/${chapterSlug}`;
+}
+
+function downloadPDF(chapterSlug) {
+  window.location.href = `/api/download-pdf/${chapterSlug}`;
+}
+```
+
+### User Flow Example
+
+```
+1. User search manhwa
+   GET /api/search?q=solo leveling
+
+2. User klik judul
+   GET /api/series/the-solo-leveling-id
+   Response: Detail + List chapters
+
+3. User pilih chapter & klik "Download PDF"
+   GET /api/download-pdf/the-solo-leveling-id-chapter-00
+   Result: PDF file downloaded!
+```
+
+### Notes
+
+- ⚠️ Download time tergantung jumlah gambar dan kecepatan internet
+- ⚠️ Chapter dengan 50+ gambar memakan waktu lebih lama
+- ✅ Jika ada gambar yang gagal, proses tetap berlanjut
+- ✅ Server logging menampilkan progress download
+
 ## 🛠️ Tech Stack
 
 - **Express.js** - Web framework
@@ -351,6 +458,8 @@ GET /api/search?q=solo
 - **CORS** - Cross-origin resource sharing
 - **Dotenv** - Environment variables
 - **Node-Cache** - In-memory caching (10 menit TTL)
+- **Archiver** - ZIP file creation
+- **PDFKit** - PDF generation
 - **Serverless-HTTP** - Netlify Functions adapter
 - **Netlify Functions** - Serverless deployment
 
