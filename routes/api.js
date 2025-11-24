@@ -18,10 +18,7 @@ router.get("/", (req, res) => {
       seriesList: "/api/series-list?page=1 (All Series List)",
       genres: "/api/genres (Get all genres)",
       detail: "/api/series/:slug",
-      chapter: "/api/chapter/:slug",
-      download: "/api/download/:slug (Get chapter image URLs for download)",
-      downloadMultiple: "POST /api/download-multiple (Download multiple chapters as ZIP)",
-      downloadPdf: "/api/download-pdf/:slug (Download chapter as PDF)",
+      chapter: "/api/chapter/:slug (Get chapter images for reading/download)",
       search: "/api/search?q=query",
     },
   });

@@ -2,32 +2,32 @@
 <html lang="en" class="scroll-smooth">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manhwaindo API Documentation</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
-        rel="stylesheet">
+        rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
+                        sans: ["Outfit", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"],
                     },
                     colors: {
                         slate: {
-                            850: '#1e293b', // Custom dark shade
-                            950: '#020617', // Darker background
-                        }
-                    }
-                }
-            }
-        }
+                            850: "#1e293b", // Custom dark shade
+                            950: "#020617", // Darker background
+                        },
+                    },
+                },
+            },
+        };
     </script>
     <style>
         /* Custom Scrollbar */
@@ -74,13 +74,11 @@
 </head>
 
 <body class="bg-slate-950 text-slate-50 font-sans antialiased selection:bg-purple-500 selection:text-white">
-
     <!-- Header -->
     <header class="sticky top-0 z-50 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-md">
         <div class="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
             <div class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-                Manhwaindo API
-            </div>
+                Manhwaindo API</div>
             <div class="flex items-center space-x-4">
                 <a href="https://github.com/ramadhanu27/Manhwaindo-API" target="_blank" rel="noopener noreferrer"
                     class="inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-700 bg-slate-800/50 hover:border-purple-500 hover:bg-purple-500/10 transition-all duration-300 group">
@@ -113,13 +111,11 @@
         </div>
 
         <div class="container mx-auto px-4 text-center md:px-6">
-            <h1 class="mb-6 text-4xl font-bold tracking-tight sm:text-6xl">
-                Powerful <span class="text-purple-400">Manhwa Scraper</span> API
-            </h1>
-            <p class="mx-auto mb-10 max-w-2xl text-lg text-slate-400 sm:text-xl">
-                Access thousands of manhwa series, chapters, and images with a simple, fast, and robust REST API. Now
-                with intelligent caching and dynamic view counting.
-            </p>
+            <h1 class="mb-6 text-4xl font-bold tracking-tight sm:text-6xl">Powerful <span class="text-purple-400">Manhwa
+                    Scraper</span> API</h1>
+            <p class="mx-auto mb-10 max-w-2xl text-lg text-slate-400 sm:text-xl">Access thousands of manhwa series,
+                chapters, and images with a simple, fast, and robust REST API. Now with intelligent caching and dynamic
+                view counting.</p>
             <div class="flex justify-center gap-4">
                 <a href="#endpoints"
                     class="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-purple-600 px-8 py-3 font-semibold text-white transition-all duration-300 hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(147,51,234,0.5)] focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-slate-900">
@@ -136,7 +132,6 @@
     <!-- Documentation Section -->
     <section id="endpoints" class="py-16">
         <div class="container mx-auto px-4 md:px-6 max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-8">
-
             <!-- Endpoint 0: API Info -->
             <div
                 class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
@@ -751,7 +746,6 @@
 <span class="text-slate-500">// Page size: A4 with auto-scaling for image width</span></code></pre>
                 </div>
             </div>
-
         </div>
     </section>
 
@@ -769,14 +763,14 @@
             const code = pre.innerText;
             navigator.clipboard.writeText(code).then(() => {
                 const originalText = button.innerText;
-                button.innerText = 'Copied!';
-                button.classList.remove('bg-slate-800', 'text-slate-400', 'border-slate-700');
-                button.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
+                button.innerText = "Copied!";
+                button.classList.remove("bg-slate-800", "text-slate-400", "border-slate-700");
+                button.classList.add("bg-emerald-500", "text-white", "border-emerald-600");
 
                 setTimeout(() => {
                     button.innerText = originalText;
-                    button.classList.remove('bg-emerald-500', 'text-white', 'border-emerald-600');
-                    button.classList.add('bg-slate-800', 'text-slate-400', 'border-slate-700');
+                    button.classList.remove("bg-emerald-500", "text-white", "border-emerald-600");
+                    button.classList.add("bg-slate-800", "text-slate-400", "border-slate-700");
                 }, 2000);
             });
         }
@@ -798,32 +792,32 @@
                         </span>
                         <span class="text-emerald-400 font-semibold">Online (${latency}ms)</span>
                     `;
-                    el.classList.remove('bg-slate-800/50', 'border-slate-700/50');
-                    el.classList.add('bg-emerald-500/10', 'border-emerald-500/20');
+                    el.classList.remove("bg-slate-800/50", "border-slate-700/50");
+                    el.classList.add("bg-emerald-500/10", "border-emerald-500/20");
                 } else {
-                    throw new Error('Status not OK');
+                    throw new Error("Status not OK");
                 }
             } catch (error) {
                 el.innerHTML = `
                     <span class="flex h-2 w-2 rounded-full bg-red-500"></span>
                     <span class="text-red-400 font-semibold">Offline</span>
                 `;
-                el.classList.remove('bg-slate-800/50', 'border-slate-700/50');
-                el.classList.add('bg-red-500/10', 'border-red-500/20');
+                el.classList.remove("bg-slate-800/50", "border-slate-700/50");
+                el.classList.add("bg-red-500/10", "border-red-500/20");
             }
         }
 
         // Check status on load
-        document.addEventListener('DOMContentLoaded', () => {
-            checkEndpointStatus('/api', 'status-api');
-            checkEndpointStatus('/api/project?page=1', 'status-project');
-            checkEndpointStatus('/api/lastupdate?page=1', 'status-lastupdate');
-            checkEndpointStatus('/api/popular', 'status-popular');
-            checkEndpointStatus('/api/genres', 'status-genres');
-            checkEndpointStatus('/api/series-list?page=1', 'status-serieslist');
-            checkEndpointStatus('/api/series/solo-leveling', 'status-series');
-            checkEndpointStatus('/api/chapter/solo-leveling-chapter-1', 'status-chapter');
-            checkEndpointStatus('/api/search?q=solo', 'status-search');
+        document.addEventListener("DOMContentLoaded", () => {
+            checkEndpointStatus("/api", "status-api");
+            checkEndpointStatus("/api/project?page=1", "status-project");
+            checkEndpointStatus("/api/lastupdate?page=1", "status-lastupdate");
+            checkEndpointStatus("/api/popular", "status-popular");
+            checkEndpointStatus("/api/genres", "status-genres");
+            checkEndpointStatus("/api/series-list?page=1", "status-serieslist");
+            checkEndpointStatus("/api/series/solo-leveling", "status-series");
+            checkEndpointStatus("/api/chapter/solo-leveling-chapter-1", "status-chapter");
+            checkEndpointStatus("/api/search?q=solo", "status-search");
             // Skip download endpoints to avoid automatic downloads on page load
             // checkEndpointStatus('/api/download/solo-leveling-chapter-1', 'status-download');
             // checkEndpointStatus('/api/download-multiple', 'status-downloadmultiple');
