@@ -19,7 +19,7 @@ router.get("/", (req, res) => {
       genres: "/api/genres (Get all genres)",
       detail: "/api/series/:slug",
       chapter: "/api/chapter/:slug",
-      download: "/api/download/:slug (Download chapter as ZIP)",
+      download: "/api/download/:slug (Get chapter image URLs for download)",
       downloadMultiple: "POST /api/download-multiple (Download multiple chapters as ZIP)",
       downloadPdf: "/api/download-pdf/:slug (Download chapter as PDF)",
       search: "/api/search?q=query",
@@ -154,13 +154,12 @@ router.get("/chapter/:slug(*)", async (req, res) => {
 
 /**
  * GET /api/download/:slug
- * Download chapter as ZIP file
+ * Get download information for a chapter (returns image URLs for client-side download)
+ * This avoids Netlify's 6MB serverless function response limit
  */
 router.get("/download/:slug(*)", async (req, res) => {
   try {
     const { slug } = req.params;
-    const archiver = require("archiver");
-    const axios = require("axios");
 
     // Get chapter data
     const result = await scrapeChapter(slug);
@@ -178,75 +177,29 @@ router.get("/download/:slug(*)", async (req, res) => {
       });
     }
 
-    // Set response headers for ZIP download
-    res.setHeader("Content-Type", "application/zip");
-    res.setHeader("Content-Disposition", `attachment; filename="${slug}.zip"`);
+    console.log(`[Download Info] Returning ${images.length} image URLs for ${slug}`);
 
-    // Create ZIP archive
-    const archive = archiver("zip", {
-      zlib: { level: 9 }, // Maximum compression
+    // Return download information
+    res.json({
+      success: true,
+      data: {
+        slug,
+        title,
+        totalImages: images.length,
+        images: images.map((url, index) => ({
+          url,
+          filename: `${String(index + 1).padStart(3, "0")}.jpg`,
+          index: index + 1,
+        })),
+        downloadInstructions: "Use client-side download or the /api/download-zip/:slug endpoint for smaller chapters",
+      },
     });
-
-    // Handle archive errors
-    archive.on("error", (err) => {
-      console.error("Archive error:", err);
-      throw err;
-    });
-
-    // Pipe archive to response
-    archive.pipe(res);
-
-    let successCount = 0;
-    let failCount = 0;
-
-    console.log(`[Download] Starting download for ${slug} (${images.length} images)`);
-
-    // Download and add each image to ZIP
-    for (let i = 0; i < images.length; i++) {
-      try {
-        const imageUrl = images[i];
-
-        const response = await axios.get(imageUrl, {
-          responseType: "arraybuffer",
-          timeout: 30000, // 30 second timeout
-          headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            Referer: "https://manhwaindo.app/",
-            Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-          },
-        });
-
-        // Get file extension from URL or Content-Type
-        let ext = imageUrl.match(/\.(jpg|jpeg|png|webp|gif)$/i)?.[1];
-        if (!ext) {
-          const contentType = response.headers["content-type"];
-          ext = contentType?.split("/")[1]?.split(";")[0] || "jpg";
-        }
-
-        const filename = `${String(i + 1).padStart(3, "0")}.${ext}`;
-
-        // Add image to archive
-        archive.append(Buffer.from(response.data), { name: filename });
-        successCount++;
-      } catch (error) {
-        failCount++;
-        console.error(`[Download] Failed image ${i + 1}/${images.length}: ${error.message}`);
-        // Continue with next image even if one fails
-      }
-    }
-
-    console.log(`[Download] Complete: ${successCount} success, ${failCount} failed`);
-
-    // Finalize archive
-    await archive.finalize();
   } catch (error) {
-    console.error("[Download] Error:", error);
-    if (!res.headersSent) {
-      res.status(500).json({
-        success: false,
-        message: error.message,
-      });
-    }
+    console.error("[Download Info] Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 });
 
