@@ -447,13 +447,24 @@ Series list mendukung multiple filter:
 
 ## 📝 Notes
 
+### Manhwa API
 - API ini melakukan scraping real-time dari manhwaindo.app
+- View counter menggunakan dynamic AJAX request
+- Chapter navigation support untuk semua series
+- Download ZIP dan PDF support untuk semua chapter
+
+### Anime API
+- API ini melakukan scraping real-time dari otakudesu.best
+- Streaming URLs dan download links tersedia untuk setiap episode
+- Mendukung multiple kualitas (360p, 480p, 720p, 1080p) dalam format MP4 dan MKV
+- Base64 decoding untuk streaming URLs dari data-content attribute
+
+### General
 - Gunakan dengan bijak dan jangan spam request
 - Response time tergantung kecepatan website target
 - Caching otomatis 10 menit untuk mengurangi beban server
 - Semua request di-log untuk monitoring
-- View counter menggunakan dynamic AJAX request
-- Chapter navigation support untuk semua series
+- CORS enabled untuk akses cross-origin
 
 ## 🔐 Rate Limiting
 
@@ -488,8 +499,9 @@ PORT=3001 npm start
 **API tidak merespons**
 
 - Pastikan internet connection aktif
-- Cek apakah manhwaindo.app masih online
+- Cek apakah manhwaindo.app atau otakudesu.best masih online
 - Lihat console logs untuk error details
+- Verifikasi bahwa struktur HTML website belum berubah
 
 **Chapter navigation null**
 
@@ -504,7 +516,7 @@ PORT=3001 npm start
 
 ## ⚠️ Disclaimer
 
-API ini dibuat untuk tujuan edukasi. Pastikan Anda mematuhi Terms of Service dari website yang di-scrape. Penulis tidak bertanggung jawab atas penggunaan yang melanggar hukum.
+API ini dibuat untuk tujuan edukasi. API ini melakukan scraping dari manhwaindo.app dan otakudesu.best. Pastikan Anda mematuhi Terms of Service dari website yang di-scrape. Penulis tidak bertanggung jawab atas penggunaan yang melanggar hukum atau penyalahgunaan API ini.
 
 ## 📄 License
 
