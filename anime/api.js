@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const axios = require("axios");
 const { scrapeOngoing, scrapeComplete, scrapeDetail, scrapeEpisode, scrapeSearch, scrapeSchedule, scrapeGenres } = require("./scraper");
 
 /**
@@ -147,6 +148,37 @@ router.get("/genres", async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/anime/rust/*
+ * Proxy to Manhwaindo API Rust (server-to-server request to bypass CORS/403)
+ * Example: /api/anime/rust/detail/anime/kimi-koete-koi-naru-sub-indo/
+ */
+router.get("/rust/*", async (req, res) => {
+  try {
+    const path = req.params[0];
+    const rustApiUrl = `https://manhwaindo-api-rust.vercel.app/api/${path}`;
+
+    console.log(`[Rust Proxy] Forwarding request to: ${rustApiUrl}`);
+
+    const response = await axios.get(rustApiUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        Accept: "application/json",
+      },
+      timeout: 30000,
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error(`[Rust Proxy] Error:`, error.message);
+    res.status(error.response?.status || 500).json({
+      success: false,
+      message: error.message,
+      source: "Rust API Proxy",
     });
   }
 });
