@@ -32,7 +32,6 @@ async function getBrowser() {
     });
   } else {
     // Production (Vercel/Netlify): use puppeteer-core + chromium
-    // Setup for serverless environment
     return await puppeteerCore.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
@@ -58,6 +57,14 @@ async function fetchWithPuppeteer(url) {
       waitUntil: "networkidle2", // Wait until network is idle (page loaded)
       timeout: 60000, // 60 seconds timeout
     });
+
+    // Wait for critical element to ensure page is loaded
+    // Waiting for .jdlrx (title container) or .venutama (main container)
+    try {
+      await page.waitForSelector(".jdlrx", { timeout: 10000 });
+    } catch (e) {
+      console.log("Timeout waiting for .jdlrx, trying to continue...");
+    }
 
     // Get HTML content
     const content = await page.content();
@@ -187,6 +194,7 @@ async function scrapeDetail(slug) {
     const info = {};
     $(".infozingle p").each((i, el) => {
       const text = $(el).text();
+      // Parsing logic adjusted for potential span structure
       if (text.includes("Judul:")) info.judul = text.replace("Judul:", "").trim();
       if (text.includes("Japanese:")) info.japanese = text.replace("Japanese:", "").trim();
       if (text.includes("Skor:")) info.skor = text.replace("Skor:", "").trim();
