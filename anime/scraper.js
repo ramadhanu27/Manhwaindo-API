@@ -3,6 +3,23 @@ const cheerio = require("cheerio");
 
 const BASE_URL = "https://otakudesu.best";
 
+// Helper function to get realistic browser headers
+const getBrowserHeaders = (referer = BASE_URL) => ({
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+  "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
+  "Accept-Encoding": "gzip, deflate, br",
+  Referer: referer,
+  DNT: "1",
+  Connection: "keep-alive",
+  "Upgrade-Insecure-Requests": "1",
+  "Sec-Fetch-Dest": "document",
+  "Sec-Fetch-Mode": "navigate",
+  "Sec-Fetch-Site": "same-origin",
+  "Sec-Fetch-User": "?1",
+  "Cache-Control": "max-age=0",
+});
+
 /**
  * Scrape ongoing anime from homepage
  */
@@ -10,9 +27,7 @@ async function scrapeOngoing(page = 1) {
   try {
     const url = page === 1 ? BASE_URL : `${BASE_URL}/page/${page}`;
     const { data } = await axios.get(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
+      headers: getBrowserHeaders(),
     });
 
     const $ = cheerio.load(data);
@@ -62,9 +77,7 @@ async function scrapeComplete(page = 1) {
   try {
     const url = `${BASE_URL}/complete-anime/page/${page}`;
     const { data } = await axios.get(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
+      headers: getBrowserHeaders(),
     });
 
     const $ = cheerio.load(data);

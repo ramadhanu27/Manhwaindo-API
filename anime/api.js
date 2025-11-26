@@ -166,8 +166,17 @@ router.get("/rust/*", async (req, res) => {
 
     const response = await axios.get(rustApiUrl, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        Accept: "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Referer": "https://manhwaindo-api-rust.vercel.app/",
+        "Origin": "https://manhwaindo-api-rust.vercel.app",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
       },
       timeout: 30000,
     });
@@ -175,10 +184,13 @@ router.get("/rust/*", async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error(`[Rust Proxy] Error:`, error.message);
+    console.error(`[Rust Proxy] Status:`, error.response?.status);
+    console.error(`[Rust Proxy] Data:`, error.response?.data);
     res.status(error.response?.status || 500).json({
       success: false,
       message: error.message,
       source: "Rust API Proxy",
+      details: error.response?.data,
     });
   }
 });
