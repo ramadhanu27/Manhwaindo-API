@@ -7,8 +7,14 @@
   command = "npm run dev"
   port = 3000
 
-# Redirect all API requests to the main API function
+# Anime API routes
+[[redirects]]
+  from = "/api/anime/*"
+  to = "/.netlify/functions/anime/:splat"
+  status = 200
+
+# Manhwa API routes
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/server/:splat"
+  to = "/.netlify/functions/api/:splat"
   status = 200

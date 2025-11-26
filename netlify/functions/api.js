@@ -50,8 +50,8 @@ const cacheMiddleware = (duration) => (req, res, next) => {
 
 // Routes with Cache
 // Cache duration: 10 minutes (600 seconds)
-// Note: Netlify redirects /api/* to /.netlify/functions/server/:splat
-// So we mount at root, not /api
+// Netlify redirects /api/* to /.netlify/functions/api/:splat
+// So request /api/popular becomes /popular in this function
 app.use('/', cacheMiddleware(600), apiRoutes);
 
 // 404 handler

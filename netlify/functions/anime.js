@@ -1,6 +1,3 @@
-// This file is deprecated - use netlify/functions/server.js instead
-// Kept for backward compatibility
-
 const serverless = require("serverless-http");
 require("dotenv").config();
 const express = require("express");
@@ -20,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Logging middleware
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log(`[ANIME] [${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
 
@@ -34,10 +31,10 @@ const cacheMiddleware = (duration) => (req, res, next) => {
   const cachedResponse = cache.get(key);
 
   if (cachedResponse) {
-    console.log(`[CACHE HIT] ${key}`);
+    console.log(`[ANIME CACHE HIT] ${key}`);
     return res.json(cachedResponse);
   } else {
-    console.log(`[CACHE MISS] ${key}`);
+    console.log(`[ANIME CACHE MISS] ${key}`);
     const originalJson = res.json;
     res.json = (body) => {
       if (body.success) {
@@ -49,7 +46,9 @@ const cacheMiddleware = (duration) => (req, res, next) => {
   }
 };
 
-// Mount anime routes at root (Netlify handles /api/anime prefix)
+// Mount anime routes at root
+// Netlify redirects /api/anime/* to /.netlify/functions/anime/:splat
+// So request /api/anime/ongoing becomes /ongoing in this function
 app.use("/", cacheMiddleware(600), animeRoutes);
 
 // 404 handler
@@ -62,7 +61,7 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error("[ANIME ERROR]", err.stack);
   res.status(500).json({
     success: false,
     message: "Internal server error",
