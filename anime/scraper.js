@@ -1,16 +1,17 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
+const chromium = require("@sparticuz/chromium");
+const puppeteerCore = require("puppeteer-core");
 
 const BASE_URL = "https://otakudesu.best";
 
-// Helper function to get realistic browser headers
-const getBrowserHeaders = (referer = BASE_URL, cookie = "") => ({
+// Helper function to get realistic browser headers (for axios requests)
+const getBrowserHeaders = (referer = BASE_URL) => ({
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
   "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
   "Accept-Encoding": "gzip, deflate, br",
   Referer: referer,
-  Cookie: cookie,
   "Upgrade-Insecure-Requests": "1",
   "Sec-Fetch-Dest": "document",
   "Sec-Fetch-Mode": "navigate",
@@ -18,24 +19,61 @@ const getBrowserHeaders = (referer = BASE_URL, cookie = "") => ({
   "Sec-Fetch-User": "?1",
 });
 
-// Helper to get cookies from homepage
-async function getSessionCookies() {
-  try {
-    const response = await axios.get(BASE_URL, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      },
+// Helper to launch browser (Puppeteer)
+async function getBrowser() {
+  const isLocal = process.env.NODE_ENV === "development" || !process.env.AWS_REGION;
+
+  if (isLocal) {
+    // Local development: use full puppeteer
+    const puppeteer = require("puppeteer");
+    return await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
-    const cookies = response.headers["set-cookie"];
-    return cookies ? cookies.map((c) => c.split(";")[0]).join("; ") : "";
-  } catch (e) {
-    console.error("Failed to get cookies:", e.message);
-    return "";
+  } else {
+    // Production (Vercel/Netlify): use puppeteer-core + chromium
+    // Setup for serverless environment
+    return await puppeteerCore.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
+    });
+  }
+}
+
+// Helper to fetch content using Puppeteer (for protected pages)
+async function fetchWithPuppeteer(url) {
+  let browser = null;
+  try {
+    browser = await getBrowser();
+    const page = await browser.newPage();
+
+    // Set User-Agent
+    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+
+    // Navigate to URL
+    await page.goto(url, {
+      waitUntil: "networkidle2", // Wait until network is idle (page loaded)
+      timeout: 60000, // 60 seconds timeout
+    });
+
+    // Get HTML content
+    const content = await page.content();
+    return content;
+  } catch (error) {
+    console.error(`Puppeteer error for ${url}:`, error.message);
+    throw error;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }
 
 /**
- * Scrape ongoing anime from homepage
+ * Scrape ongoing anime from homepage (Axios is fine for this usually)
  */
 async function scrapeOngoing(page = 1) {
   try {
@@ -47,7 +85,6 @@ async function scrapeOngoing(page = 1) {
     const $ = cheerio.load(data);
     const animeList = [];
 
-    // Find ongoing anime section
     $(".venz ul li").each((i, el) => {
       const title = $(el).find(".jdlflm").text().trim();
       const slug = $(el).find("a").attr("href");
@@ -130,20 +167,15 @@ async function scrapeComplete(page = 1) {
 }
 
 /**
- * Scrape anime detail by slug
+ * Scrape anime detail by slug (Uses Puppeteer)
  */
 async function scrapeDetail(slug) {
   try {
-    // Step 1: Get Session Cookies
-    const cookie = await getSessionCookies();
-
-    // Step 2: Request with Cookie
     const url = `${BASE_URL}${slug}`;
-    const { data } = await axios.get(url, {
-      headers: getBrowserHeaders(BASE_URL, cookie),
-    });
 
-    const $ = cheerio.load(data);
+    // Use Puppeteer instead of Axios
+    const html = await fetchWithPuppeteer(url);
+    const $ = cheerio.load(html);
 
     // Get basic info
     const title = $(".jdlrx h1").text().trim();
@@ -224,20 +256,15 @@ async function scrapeDetail(slug) {
 }
 
 /**
- * Scrape episode download and streaming links
+ * Scrape episode download and streaming links (Uses Puppeteer)
  */
 async function scrapeEpisode(slug) {
   try {
-    // Step 1: Get Session Cookies
-    const cookie = await getSessionCookies();
-
-    // Step 2: Request with Cookie
     const url = `${BASE_URL}${slug}`;
-    const { data } = await axios.get(url, {
-      headers: getBrowserHeaders(BASE_URL, cookie),
-    });
 
-    const $ = cheerio.load(data);
+    // Use Puppeteer instead of Axios
+    const html = await fetchWithPuppeteer(url);
+    const $ = cheerio.load(html);
 
     const title = $(".venutama h1").text().trim();
     const episodeNumber = title;
@@ -256,7 +283,6 @@ async function scrapeEpisode(slug) {
           const jsonData = JSON.parse(decodedData);
 
           // Construct streaming URL based on decoded data
-          // Format: https://desustream.us/stream/v5/index.php?id={id}&i={i}&q={q}
           if (jsonData.id && jsonData.hasOwnProperty("i") && jsonData.q) {
             streamUrl = `https://desustream.us/stream/v5/index.php?id=${jsonData.id}&i=${jsonData.i}&q=${jsonData.q}`;
           }
