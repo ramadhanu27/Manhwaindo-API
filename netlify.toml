@@ -4,10 +4,8 @@
   publish = "public"
 
 [functions]
-  # Node bundler settings
-  node_bundler = "esbuild"
-  # Include all node_modules in functions
-  included_files = ["routes/**", "anime/**", "utils/**"]
+  # Use NFT (Node File Trace) bundler - automatically includes all dependencies
+  node_bundler = "nft"
 
 [dev]
   command = "npm run dev"
