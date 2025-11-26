@@ -51,7 +51,8 @@ const cacheMiddleware = (duration) => (req, res, next) => {
 
 // Routes with Cache
 // Cache duration: 10 minutes (600 seconds)
-app.use("/api/anime", cacheMiddleware(600), animeRoutes);
+// Note: Base path /api/anime is handled by Netlify redirects
+app.use("/", cacheMiddleware(600), animeRoutes);
 
 // 404 handler
 app.use((req, res) => {
