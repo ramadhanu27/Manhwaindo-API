@@ -50,7 +50,9 @@ const cacheMiddleware = (duration) => (req, res, next) => {
 
 // Routes with Cache
 // Cache duration: 10 minutes (600 seconds)
-app.use('/api', cacheMiddleware(600), apiRoutes);
+// Note: Netlify redirects /api/* to /.netlify/functions/server/:splat
+// So we mount at root, not /api
+app.use('/', cacheMiddleware(600), apiRoutes);
 
 // 404 handler
 app.use((req, res) => {

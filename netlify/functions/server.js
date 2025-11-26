@@ -1,11 +1,9 @@
-// This file is deprecated - use netlify/functions/server.js instead
-// Kept for backward compatibility
-
 const serverless = require("serverless-http");
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const NodeCache = require("node-cache");
+const apiRoutes = require("../../routes/api");
 const animeRoutes = require("../../anime/api");
 
 const app = express();
@@ -26,6 +24,7 @@ app.use((req, res, next) => {
 
 // Cache Middleware
 const cacheMiddleware = (duration) => (req, res, next) => {
+  // Only cache GET requests
   if (req.method !== "GET") {
     return next();
   }
@@ -38,9 +37,11 @@ const cacheMiddleware = (duration) => (req, res, next) => {
     return res.json(cachedResponse);
   } else {
     console.log(`[CACHE MISS] ${key}`);
+    // Override res.json to store response in cache
     const originalJson = res.json;
     res.json = (body) => {
       if (body.success) {
+        // Only cache successful responses
         cache.set(key, body, duration);
       }
       originalJson.call(res, body);
@@ -49,14 +50,16 @@ const cacheMiddleware = (duration) => (req, res, next) => {
   }
 };
 
-// Mount anime routes at root (Netlify handles /api/anime prefix)
-app.use("/", cacheMiddleware(600), animeRoutes);
+// Routes with Cache
+// Important: Register anime routes BEFORE general api routes
+app.use("/anime", cacheMiddleware(600), animeRoutes);
+app.use("/", cacheMiddleware(600), apiRoutes);
 
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: "Anime API endpoint not found",
+    message: "Endpoint not found",
   });
 });
 
