@@ -11,13 +11,23 @@
   command = "npm run dev"
   port = 3000
 
-# Anime API routes
+# Anime API routes - specific first
+[[redirects]]
+  from = "/api/anime"
+  to = "/.netlify/functions/anime/"
+  status = 200
+
 [[redirects]]
   from = "/api/anime/*"
   to = "/.netlify/functions/anime/:splat"
   status = 200
 
-# Manhwa API routes
+# Manhwa API routes - specific first
+[[redirects]]
+  from = "/api"
+  to = "/.netlify/functions/api/"
+  status = 200
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
