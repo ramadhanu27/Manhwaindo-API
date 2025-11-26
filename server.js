@@ -54,8 +54,8 @@ const cacheMiddleware = (duration) => (req, res, next) => {
 
 // Routes with Cache
 // Cache duration: 10 minutes (600 seconds)
-app.use("/api", cacheMiddleware(600), apiRoutes);
 app.use("/api/anime", cacheMiddleware(600), animeRoutes);
+app.use("/api", cacheMiddleware(600), apiRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => {

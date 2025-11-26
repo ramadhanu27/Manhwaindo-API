@@ -4,8 +4,14 @@ API scraper untuk website **Otakudesu** (https://otakudesu.best) - Website strea
 
 ## Base URL
 
+**Local Development:**
 ```
 http://localhost:3000/api/anime
+```
+
+**Production (Public):**
+```
+https://your-deployed-url.com/api/anime
 ```
 
 ## Endpoints
@@ -396,6 +402,62 @@ print(data)
 response = requests.get('http://localhost:3000/api/anime/search', params={'q': 'naruto'})
 data = response.json()
 print(data)
+```
+
+---
+
+## Deployment (Public Access)
+
+Untuk membuat API anime dapat diakses secara public, Anda dapat deploy ke platform berikut:
+
+### Option 1: Render (Recommended)
+
+1. Push project ke GitHub
+2. Buka https://render.com dan sign up
+3. Click "New +" → "Web Service"
+4. Connect GitHub repository
+5. Configure:
+   - **Name**: anime-api
+   - **Environment**: Node
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+6. Click "Create Web Service"
+7. Tunggu deployment selesai, URL akan otomatis generated
+
+### Option 2: Railway
+
+1. Push project ke GitHub
+2. Buka https://railway.app dan sign up
+3. Click "New Project" → "Deploy from GitHub repo"
+4. Select repository
+5. Railway akan auto-detect Node.js project
+6. Tunggu deployment selesai
+
+### Option 3: Heroku (Legacy)
+
+1. Install Heroku CLI
+2. Run: `heroku login`
+3. Run: `heroku create anime-api`
+4. Run: `git push heroku main`
+5. Check URL: `heroku open`
+
+### Environment Variables
+
+Buat file `.env` di root project:
+
+```
+PORT=3000
+NODE_ENV=production
+```
+
+### Testing Public API
+
+Setelah deploy, test endpoint dengan:
+
+```bash
+curl https://your-deployed-url.com/api/anime
+curl https://your-deployed-url.com/api/anime/ongoing?page=1
+curl https://your-deployed-url.com/api/anime/search?q=naruto
 ```
 
 ---

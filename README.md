@@ -70,12 +70,53 @@ npm run dev
 npm start
 ```
 
-## 🚀 Deployment ke Netlify
+## 🚀 Deployment (Public Access)
+
+### Option 1: Render (Recommended - Easiest)
+
+1. Push code ke GitHub
+2. Buka https://render.com dan sign up
+3. Click "New +" → "Web Service"
+4. Connect GitHub repository
+5. Configure:
+   - **Name**: anime-manhwa-api
+   - **Environment**: Node
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+6. Click "Create Web Service"
+7. Tunggu deployment selesai (~2 menit)
+8. URL akan otomatis generated (contoh: `https://anime-manhwa-api.onrender.com`)
+
+### Option 2: Railway
+
+1. Push code ke GitHub
+2. Buka https://railway.app dan sign up
+3. Click "New Project" → "Deploy from GitHub repo"
+4. Select repository
+5. Railway akan auto-detect Node.js project
+6. Tunggu deployment selesai
+
+### Option 3: Netlify Functions
 
 1. Push code ke GitHub
 2. Connect repository ke Netlify
 3. Netlify akan otomatis deploy dengan konfigurasi `netlify.toml`
 4. API akan tersedia di `https://your-site.netlify.app/api/*`
+
+### Testing Public API
+
+Setelah deploy, test dengan:
+
+```bash
+# Test Anime API
+curl https://your-deployed-url.com/api/anime
+curl https://your-deployed-url.com/api/anime/ongoing?page=1
+curl https://your-deployed-url.com/api/anime/search?q=naruto
+
+# Test Manhwa API
+curl https://your-deployed-url.com/api
+curl https://your-deployed-url.com/api/popular
+```
 
 ## 🔧 Konfigurasi
 
