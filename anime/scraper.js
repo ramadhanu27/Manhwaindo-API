@@ -126,9 +126,7 @@ async function scrapeDetail(slug) {
   try {
     const url = `${BASE_URL}${slug}`;
     const { data } = await axios.get(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
+      headers: getBrowserHeaders(BASE_URL),
     });
 
     const $ = cheerio.load(data);
@@ -218,9 +216,7 @@ async function scrapeEpisode(slug) {
   try {
     const url = `${BASE_URL}${slug}`;
     const { data } = await axios.get(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
+      headers: getBrowserHeaders(BASE_URL),
     });
 
     const $ = cheerio.load(data);
@@ -318,9 +314,7 @@ async function scrapeSearch(query) {
   try {
     const url = `${BASE_URL}/?s=${encodeURIComponent(query)}&post_type=anime`;
     const { data } = await axios.get(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
+      headers: getBrowserHeaders(),
     });
 
     const $ = cheerio.load(data);
@@ -379,9 +373,7 @@ async function scrapeSchedule() {
   try {
     const url = `${BASE_URL}/jadwal-rilis`;
     const { data } = await axios.get(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
+      headers: getBrowserHeaders(),
     });
 
     const $ = cheerio.load(data);
@@ -430,9 +422,7 @@ async function scrapeGenres() {
   try {
     const url = `${BASE_URL}/genre-list`;
     const { data } = await axios.get(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
+      headers: getBrowserHeaders(),
     });
 
     const $ = cheerio.load(data);
