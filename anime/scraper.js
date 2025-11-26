@@ -4,21 +4,35 @@ const cheerio = require("cheerio");
 const BASE_URL = "https://otakudesu.best";
 
 // Helper function to get realistic browser headers
-const getBrowserHeaders = (referer = BASE_URL) => ({
+const getBrowserHeaders = (referer = BASE_URL, cookie = "") => ({
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
   "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
   "Accept-Encoding": "gzip, deflate, br",
   Referer: referer,
-  DNT: "1",
-  Connection: "keep-alive",
+  Cookie: cookie,
   "Upgrade-Insecure-Requests": "1",
   "Sec-Fetch-Dest": "document",
   "Sec-Fetch-Mode": "navigate",
   "Sec-Fetch-Site": "same-origin",
   "Sec-Fetch-User": "?1",
-  "Cache-Control": "max-age=0",
 });
+
+// Helper to get cookies from homepage
+async function getSessionCookies() {
+  try {
+    const response = await axios.get(BASE_URL, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      },
+    });
+    const cookies = response.headers["set-cookie"];
+    return cookies ? cookies.map((c) => c.split(";")[0]).join("; ") : "";
+  } catch (e) {
+    console.error("Failed to get cookies:", e.message);
+    return "";
+  }
+}
 
 /**
  * Scrape ongoing anime from homepage
@@ -56,10 +70,8 @@ async function scrapeOngoing(page = 1) {
 
     return {
       success: true,
-      data: {
-        page,
-        animeList,
-      },
+      page,
+      data: animeList,
     };
   } catch (error) {
     console.error("Error scraping ongoing:", error.message);
@@ -105,10 +117,8 @@ async function scrapeComplete(page = 1) {
 
     return {
       success: true,
-      data: {
-        page,
-        animeList,
-      },
+      page,
+      data: animeList,
     };
   } catch (error) {
     console.error("Error scraping complete:", error.message);
@@ -124,9 +134,13 @@ async function scrapeComplete(page = 1) {
  */
 async function scrapeDetail(slug) {
   try {
+    // Step 1: Get Session Cookies
+    const cookie = await getSessionCookies();
+
+    // Step 2: Request with Cookie
     const url = `${BASE_URL}${slug}`;
     const { data } = await axios.get(url, {
-      headers: getBrowserHeaders(BASE_URL),
+      headers: getBrowserHeaders(BASE_URL, cookie),
     });
 
     const $ = cheerio.load(data);
@@ -214,9 +228,13 @@ async function scrapeDetail(slug) {
  */
 async function scrapeEpisode(slug) {
   try {
+    // Step 1: Get Session Cookies
+    const cookie = await getSessionCookies();
+
+    // Step 2: Request with Cookie
     const url = `${BASE_URL}${slug}`;
     const { data } = await axios.get(url, {
-      headers: getBrowserHeaders(BASE_URL),
+      headers: getBrowserHeaders(BASE_URL, cookie),
     });
 
     const $ = cheerio.load(data);
@@ -352,10 +370,7 @@ async function scrapeSearch(query) {
 
     return {
       success: true,
-      data: {
-        query,
-        results,
-      },
+      data: results,
     };
   } catch (error) {
     console.error("Error scraping search:", error.message);
