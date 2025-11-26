@@ -1,9 +1,10 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const NodeCache = require('node-cache');
-const path = require('path');
-const apiRoutes = require('./routes/api');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const NodeCache = require("node-cache");
+const path = require("path");
+const apiRoutes = require("./routes/api");
+const animeRoutes = require("./anime/api");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,7 +16,7 @@ const cache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
+app.use(express.static(path.join(__dirname, "public"))); // Serve static files
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -26,7 +27,7 @@ app.use((req, res, next) => {
 // Cache Middleware
 const cacheMiddleware = (duration) => (req, res, next) => {
   // Only cache GET requests
-  if (req.method !== 'GET') {
+  if (req.method !== "GET") {
     return next();
   }
 
@@ -41,7 +42,8 @@ const cacheMiddleware = (duration) => (req, res, next) => {
     // Override res.json to store response in cache
     const originalJson = res.json;
     res.json = (body) => {
-      if (body.success) { // Only cache successful responses
+      if (body.success) {
+        // Only cache successful responses
         cache.set(key, body, duration);
       }
       originalJson.call(res, body);
@@ -52,18 +54,19 @@ const cacheMiddleware = (duration) => (req, res, next) => {
 
 // Routes with Cache
 // Cache duration: 10 minutes (600 seconds)
-app.use('/api', cacheMiddleware(600), apiRoutes);
+app.use("/api", cacheMiddleware(600), apiRoutes);
+app.use("/api/anime", cacheMiddleware(600), animeRoutes);
 
 // Root endpoint
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Endpoint not found'
+    message: "Endpoint not found",
   });
 });
 
@@ -72,8 +75,8 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
     success: false,
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: "Internal server error",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
 
@@ -86,6 +89,7 @@ app.listen(PORT, () => {
 ║  Port: ${PORT}                           ║
 ║  URL:  http://localhost:${PORT}          ║
 ║  API:  http://localhost:${PORT}/api      ║
+║  Anime: http://localhost:${PORT}/api/anime ║
 ╚═══════════════════════════════════════╝
   `);
 });

@@ -1,16 +1,18 @@
-# 🎨 Manhwaindo API
+# 🎨 Manhwaindo & Otakudesu API
 
 <div align="center">
   <img src="https://avatars.githubusercontent.com/u/136323687?v=4" alt="Ramadhanu Avatar" width="100" height="100" style="border-radius: 50%;" />
   <p><strong>Ramadhanu</strong></p>
 </div>
 
-Express.js API scraper untuk [manhwaindo.app](https://manhwaindo.app) dengan caching intelligent dan real-time status monitoring.
+Express.js API scraper untuk [manhwaindo.app](https://manhwaindo.app) dan [otakudesu.best](https://otakudesu.best) dengan caching intelligent dan real-time status monitoring.
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/274ed6e9-36d4-4ed4-97f1-b24345a5a46a/deploy-status)](https://app.netlify.com/projects/apimanhwa/deploys)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ## 🚀 Fitur
+
+### Manhwa API (manhwaindo.app)
 
 - ✅ **Project Updates** - Manhwa dengan update terbaru (dengan waktu rilis)
 - ✅ **Latest Update** - Daftar manhwa yang baru diupdate
@@ -22,6 +24,19 @@ Express.js API scraper untuk [manhwaindo.app](https://manhwaindo.app) dengan cac
 - ✅ **Download ZIP** - Download chapter sebagai file ZIP
 - ✅ **Download PDF** - Download chapter sebagai file PDF
 - ✅ **Search** - Pencarian manhwa yang powerful
+
+### Anime API (otakudesu.best)
+
+- ✅ **Ongoing Anime** - Daftar anime yang sedang tayang
+- ✅ **Complete Anime** - Daftar anime yang sudah selesai
+- ✅ **Anime Detail** - Detail lengkap anime dengan synopsis dan episode list
+- ✅ **Episode Download** - Link streaming dan download per episode
+- ✅ **Search Anime** - Pencarian anime
+- ✅ **Anime Schedule** - Jadwal rilis anime per hari
+- ✅ **Genres** - Daftar genre anime
+
+### General Features
+
 - ✅ **CORS Enabled** - Akses cross-origin
 - ✅ **Intelligent Caching** - 10 menit TTL
 - ✅ **Error Handling** - Robust error handling
@@ -72,6 +87,27 @@ BASE_URL=https://manhwaindo.app
 ```
 
 ## 📚 API Endpoints
+
+### Manhwa API
+
+Untuk dokumentasi lengkap Manhwa API, lihat endpoint dibawah ini.
+
+### Anime API
+
+Untuk dokumentasi lengkap Anime API, lihat file [`anime/README.md`](./anime/README.md).
+
+**Quick Links:**
+
+- `/api/anime` - Info API
+- `/api/anime/ongoing?page=1` - Ongoing anime
+- `/api/anime/complete?page=1` - Complete anime
+- `/api/anime/detail/:slug` - Detail anime
+- `/api/anime/episode/:slug` - Episode download links
+- `/api/anime/search?q=query` - Search anime
+- `/api/anime/schedule` - Anime schedule
+- `/api/anime/genres` - Genre list
+
+---
 
 ### 1. API Info
 
