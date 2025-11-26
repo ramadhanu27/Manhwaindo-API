@@ -133,6 +133,23 @@ router.get("/series/:slug", async (req, res) => {
 });
 
 /**
+ * GET /api/anime/detail/anime/:slug
+ * Alternative route for anime detail (compatibility with external API format)
+ */
+router.get("/anime/detail/anime/:slug", async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const result = await scrapeDetail(slug);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+/**
  * GET /api/chapter/:slug
  * Get chapter images
  */
