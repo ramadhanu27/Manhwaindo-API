@@ -1,9 +1,12 @@
-const serverless = require('serverless-http');
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const NodeCache = require('node-cache');
-const apiRoutes = require('../../routes/api');
+const serverless = require("serverless-http");
+const path = require("path");
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const NodeCache = require("node-cache");
+
+// Use absolute path to ensure it works in serverless environment
+const apiRoutes = require(path.join(process.cwd(), "routes", "api"));
 
 const app = express();
 
@@ -24,7 +27,7 @@ app.use((req, res, next) => {
 // Cache Middleware
 const cacheMiddleware = (duration) => (req, res, next) => {
   // Only cache GET requests
-  if (req.method !== 'GET') {
+  if (req.method !== "GET") {
     return next();
   }
 
@@ -39,7 +42,8 @@ const cacheMiddleware = (duration) => (req, res, next) => {
     // Override res.json to store response in cache
     const originalJson = res.json;
     res.json = (body) => {
-      if (body.success) { // Only cache successful responses
+      if (body.success) {
+        // Only cache successful responses
         cache.set(key, body, duration);
       }
       originalJson.call(res, body);
@@ -52,13 +56,13 @@ const cacheMiddleware = (duration) => (req, res, next) => {
 // Cache duration: 10 minutes (600 seconds)
 // Netlify redirects /api/* to /.netlify/functions/api/:splat
 // So request /api/popular becomes /popular in this function
-app.use('/', cacheMiddleware(600), apiRoutes);
+app.use("/", cacheMiddleware(600), apiRoutes);
 
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Endpoint not found'
+    message: "Endpoint not found",
   });
 });
 
@@ -67,8 +71,8 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
     success: false,
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: "Internal server error",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
 

@@ -3,6 +3,12 @@
   functions = "netlify/functions"
   publish = "public"
 
+[functions]
+  # Node bundler settings
+  node_bundler = "esbuild"
+  # Include all node_modules in functions
+  included_files = ["routes/**", "anime/**", "utils/**"]
+
 [dev]
   command = "npm run dev"
   port = 3000

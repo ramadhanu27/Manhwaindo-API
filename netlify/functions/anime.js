@@ -1,9 +1,12 @@
 const serverless = require("serverless-http");
+const path = require("path");
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const NodeCache = require("node-cache");
-const animeRoutes = require("../../anime/api");
+
+// Use absolute path to ensure it works in serverless environment
+const animeRoutes = require(path.join(process.cwd(), "anime", "api"));
 
 const app = express();
 
