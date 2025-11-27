@@ -19,51 +19,94 @@ const getBrowserHeaders = (referer = BASE_URL) => ({
   "Sec-Fetch-User": "?1",
 });
 
-// Helper to launch browser (Puppeteer)
+// Global browser instance (reused across requests)
+let browserInstance = null;
+let browserLastUsed = Date.now();
+const BROWSER_TIMEOUT = 5 * 60 * 1000; // Close browser after 5 minutes of inactivity
+
+// Helper to launch browser (Puppeteer) - with reuse
 async function getBrowser() {
   const isLocal = process.env.NODE_ENV === "development" || !process.env.AWS_REGION;
 
+  // Check if browser exists and is still connected
+  if (browserInstance && browserInstance.isConnected()) {
+    browserLastUsed = Date.now();
+    return browserInstance;
+  }
+
+  // Launch new browser
   if (isLocal) {
     // Local development: use full puppeteer
     const puppeteer = require("puppeteer");
-    return await puppeteer.launch({
+    browserInstance = await puppeteer.launch({
       headless: "new",
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage", // Reduce memory usage
+        "--disable-accelerated-2d-canvas",
+        "--no-first-run",
+        "--no-zygote",
+        "--disable-gpu",
+      ],
     });
   } else {
     // Production (Vercel/Netlify): use puppeteer-core + chromium
-    return await puppeteerCore.launch({
-      args: chromium.args,
+    browserInstance = await puppeteerCore.launch({
+      args: [...chromium.args, "--disable-dev-shm-usage"],
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
       ignoreHTTPSErrors: true,
     });
   }
+
+  browserLastUsed = Date.now();
+
+  // Auto-close browser after timeout
+  setTimeout(() => {
+    if (browserInstance && Date.now() - browserLastUsed > BROWSER_TIMEOUT) {
+      console.log("Closing idle browser...");
+      browserInstance.close();
+      browserInstance = null;
+    }
+  }, BROWSER_TIMEOUT);
+
+  return browserInstance;
 }
 
 // Helper to fetch content using Puppeteer (for protected pages)
 async function fetchWithPuppeteer(url) {
-  let browser = null;
+  let page = null;
   try {
-    browser = await getBrowser();
-    const page = await browser.newPage();
+    const browser = await getBrowser();
+    page = await browser.newPage();
+
+    // Block unnecessary resources to speed up loading
+    await page.setRequestInterception(true);
+    page.on("request", (req) => {
+      const resourceType = req.resourceType();
+      if (["image", "stylesheet", "font", "media"].includes(resourceType)) {
+        req.abort(); // Block images, CSS, fonts to load faster
+      } else {
+        req.continue();
+      }
+    });
 
     // Set User-Agent
     await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
-    // Navigate to URL
+    // Navigate to URL with faster settings
     await page.goto(url, {
-      waitUntil: "networkidle2", // Wait until network is idle (page loaded)
-      timeout: 60000, // 60 seconds timeout
+      waitUntil: "domcontentloaded", // Changed from networkidle2 (faster)
+      timeout: 30000, // Reduced timeout
     });
 
-    // Wait for critical element to ensure page is loaded
-    // Waiting for .jdlrx (title container) or .venutama (main container)
+    // Wait for critical element
     try {
-      await page.waitForSelector(".jdlrx", { timeout: 10000 });
+      await page.waitForSelector(".jdlrx, .venutama", { timeout: 5000 });
     } catch (e) {
-      console.log("Timeout waiting for .jdlrx, trying to continue...");
+      console.log("Timeout waiting for selector, continuing...");
     }
 
     // Get HTML content
@@ -73,8 +116,8 @@ async function fetchWithPuppeteer(url) {
     console.error(`Puppeteer error for ${url}:`, error.message);
     throw error;
   } finally {
-    if (browser) {
-      await browser.close();
+    if (page) {
+      await page.close(); // Close page but keep browser alive
     }
   }
 }

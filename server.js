@@ -53,8 +53,9 @@ const cacheMiddleware = (duration) => (req, res, next) => {
 };
 
 // Routes with Cache
-// Cache duration: 10 minutes (600 seconds)
-app.use("/api/anime", cacheMiddleware(600), animeRoutes);
+// Anime API: 30 minutes cache (data rarely changes, Puppeteer is slow)
+app.use("/api/anime", cacheMiddleware(1800), animeRoutes);
+// Manhwa API: 10 minutes cache
 app.use("/api", cacheMiddleware(600), apiRoutes);
 
 // Root endpoint
