@@ -95,20 +95,41 @@ async function scrapeDetail(slug) {
     const title = $("h1.entry-title").text().trim();
     const thumb = $(".thumb img").attr("src") || $(".entry-content img").first().attr("src") || "";
 
-    // Get synopsis
-    const synopsis = $(".entry-content p").first().text().trim();
+    // Get series info from .infox section
+    const seriesName = $(".infox .spe span[itemprop='name']").text().trim();
+    const alternativeTitle = $(".infox .alter").text().trim();
+    const ratingText = $(".infox .rating").text().trim();
+    const rating = ratingText.replace("Rating", "").trim();
 
-    // Get anime info from title
-    const info = {};
-    const titleParts = title.split(" ");
-    if (title.includes("Episode")) {
-      const episodeMatch = title.match(/Episode (\d+)/i);
-      info.episode = episodeMatch ? episodeMatch[1] : "";
-    }
+    // Get detailed info from .info-content
+    const animeInfo = {};
+    $(".info-content .spe").each((i, el) => {
+      const $el = $(el);
+      const label = $el.find("span").first().text().trim().replace(":", "");
+      const value = $el.clone().children().remove().end().text().trim();
+
+      if (label && value) {
+        const key = label.toLowerCase().replace(/\s+/g, "_");
+        animeInfo[key] = value;
+      }
+    });
+
+    // Get genres
+    const genres = [];
+    $(".genxed a").each((i, el) => {
+      const genre = $(el).text().trim();
+      if (genre) genres.push(genre);
+    });
+
+    // Get synopsis/description
+    const synopsis = $(".desc .entry-content").text().trim() || $(".entry-content p").first().text().trim();
+
+    // Extract episode number from title
+    const episodeMatch = title.match(/Episode (\d+)/i);
+    const episodeNumber = episodeMatch ? episodeMatch[1] : "";
 
     // Get type
     const type = $(".typez").text().trim();
-    if (type) info.type = type;
 
     // Get streaming links
     const streamingLinks = [];
@@ -121,6 +142,8 @@ async function scrapeDetail(slug) {
         else if (src.includes("youtube.com")) source = "YouTube";
         else if (src.includes("drive.google.com")) source = "Google Drive";
         else if (src.includes("mp4upload")) source = "MP4Upload";
+        else if (src.includes("fembed")) source = "Fembed";
+        else if (src.includes("streamtape")) source = "Streamtape";
 
         streamingLinks.push({
           source,
@@ -148,6 +171,8 @@ async function scrapeDetail(slug) {
         else if (href.includes("mega.nz")) host = "Mega";
         else if (href.includes("mediafire")) host = "MediaFire";
         else if (href.includes("zippyshare")) host = "ZippyShare";
+        else if (href.includes("solidfiles")) host = "Solidfiles";
+        else if (href.includes("uptobox")) host = "Uptobox";
         else if (text.toLowerCase().includes("download")) host = text;
 
         downloadLinks.push({
@@ -158,15 +183,40 @@ async function scrapeDetail(slug) {
       }
     });
 
+    // Get related episodes from .minder-slides
+    const relatedEpisodes = [];
+    $(".minder-slides a").each((i, el) => {
+      const $el = $(el);
+      const episodeTitle = $el.attr("title") || "";
+      const episodeUrl = $el.attr("href") || "";
+      const episodeThumb = $el.find("img").attr("src") || "";
+
+      if (episodeTitle && episodeUrl) {
+        relatedEpisodes.push({
+          title: episodeTitle,
+          slug: episodeUrl.replace(BASE_URL, ""),
+          thumb: episodeThumb,
+        });
+      }
+    });
+
     return {
       success: true,
       data: {
         title,
+        seriesName: seriesName || title.split(" Episode")[0],
+        alternativeTitle,
         thumb,
+        rating,
         synopsis,
-        info,
+        episode: episodeNumber,
+        type,
+        status: animeInfo.status || "",
+        genres,
+        info: animeInfo,
         streamingLinks,
         downloadLinks,
+        relatedEpisodes,
       },
     };
   } catch (error) {
