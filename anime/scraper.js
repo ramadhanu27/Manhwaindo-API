@@ -183,6 +183,32 @@ async function scrapeDetail(slug) {
       }
     });
 
+    // Get episode list from .episodelist
+    const episodeList = [];
+    $(".episodelist ul li").each((i, el) => {
+      const $el = $(el);
+      const $link = $el.find("a");
+
+      const episodeUrl = $link.attr("href") || "";
+      const episodeTitle = $el.find(".playinfo h3").text().trim();
+      const episodeDate = $el.find(".playinfo span").text().trim();
+      const isSelected = $el.hasClass("selected");
+
+      // Extract episode number from date text (e.g., "Eps 9 - November 26, 2025")
+      const epsMatch = episodeDate.match(/Eps (\d+)/i);
+      const epsNumber = epsMatch ? epsMatch[1] : "";
+
+      if (episodeUrl && episodeTitle) {
+        episodeList.push({
+          episode: epsNumber,
+          title: episodeTitle,
+          slug: episodeUrl.replace(BASE_URL, ""),
+          date: episodeDate,
+          isCurrent: isSelected,
+        });
+      }
+    });
+
     // Get related episodes from .minder-slides
     const relatedEpisodes = [];
     $(".minder-slides a").each((i, el) => {
@@ -216,6 +242,7 @@ async function scrapeDetail(slug) {
         info: animeInfo,
         streamingLinks,
         downloadLinks,
+        episodeList,
         relatedEpisodes,
       },
     };
