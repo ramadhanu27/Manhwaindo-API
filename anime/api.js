@@ -11,16 +11,52 @@ router.get("/", (req, res) => {
   res.json({
     success: true,
     message: "Anoboy Anime API",
-    version: "1.0.0",
+    version: "2.0.0",
     source: "https://anoboy.gg/",
+    note: "⚠️ Anoboy structure is different from Otakudesu. Each episode is a separate page. Use search to find episodes.",
     endpoints: {
-      ongoing: "/api/anime/ongoing?page=1 (Get ongoing anime)",
-      complete: "/api/anime/complete?page=1 (Get complete anime)",
-      detail: "/api/anime/detail/:slug (Get anime detail)",
-      episode: "/api/anime/episode/:slug (Get episode download links)",
-      search: "/api/anime/search?q=query (Search anime)",
-      schedule: "/api/anime/schedule (Get anime schedule)",
-      genres: "/api/anime/genres (Get all genres)",
+      ongoing: {
+        path: "/api/anime/ongoing?page=1",
+        description: "Get latest anime episodes",
+        example: "/api/anime/ongoing?page=1",
+      },
+      complete: {
+        path: "/api/anime/complete?page=1",
+        description: "Get complete anime (same as ongoing for Anoboy)",
+        example: "/api/anime/complete?page=1",
+      },
+      search: {
+        path: "/api/anime/search?q=query",
+        description: "Search anime episodes by title",
+        example: "/api/anime/search?q=naruto",
+        note: "Use this to get all episodes of an anime",
+      },
+      detail: {
+        path: "/api/anime/detail/:slug",
+        description: "Get episode detail with streaming & download links",
+        example: "/api/anime/detail/one-piece-episode-1151-subtitle-indonesia/",
+        note: "Slug must be from search/ongoing response",
+      },
+      episode: {
+        path: "/api/anime/episode/:slug",
+        description: "Alias for detail endpoint",
+        example: "/api/anime/episode/naruto-episode-1-subtitle-indonesia/",
+      },
+      schedule: {
+        path: "/api/anime/schedule",
+        description: "Get anime schedule (not available for Anoboy)",
+        note: "Returns empty data",
+      },
+      genres: {
+        path: "/api/anime/genres",
+        description: "Get all genres (not available for Anoboy)",
+        note: "Returns empty data",
+      },
+    },
+    usage: {
+      workflow: ["1. Search anime: GET /api/anime/search?q=naruto", "2. Get slug from search results", "3. Get episode detail: GET /api/anime/detail/{slug}", "4. Use streamingLinks or downloadLinks from response"],
+      slugFormat: "title-episode-X-subtitle-indonesia",
+      exampleSlug: "/one-piece-episode-1151-subtitle-indonesia/",
     },
   });
 });
