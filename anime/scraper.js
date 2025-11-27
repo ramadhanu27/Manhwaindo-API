@@ -79,7 +79,7 @@ async function scrapeComplete(page = 1) {
 }
 
 /**
- * Scrape anime detail by slug
+ * Scrape anime detail/episode by slug
  */
 async function scrapeDetail(slug) {
   try {
@@ -93,36 +93,66 @@ async function scrapeDetail(slug) {
 
     // Get basic info
     const title = $("h1.entry-title").text().trim();
-    const thumb = $(".entry-content img").first().attr("src") || $(".entry-content img").first().attr("data-src");
+    const thumb = $(".thumb img").attr("src") || $(".entry-content img").first().attr("src") || "";
 
     // Get synopsis
     const synopsis = $(".entry-content p").first().text().trim();
 
-    // Get streaming/download links
-    const episodeList = [];
-    $(".entry-content iframe").each((i, el) => {
+    // Get anime info from title
+    const info = {};
+    const titleParts = title.split(" ");
+    if (title.includes("Episode")) {
+      const episodeMatch = title.match(/Episode (\d+)/i);
+      info.episode = episodeMatch ? episodeMatch[1] : "";
+    }
+
+    // Get type
+    const type = $(".typez").text().trim();
+    if (type) info.type = type;
+
+    // Get streaming links
+    const streamingLinks = [];
+    $("iframe").each((i, el) => {
       const src = $(el).attr("src");
       if (src) {
-        episodeList.push({
-          episode: `Stream ${i + 1}`,
+        // Determine streaming source
+        let source = "Unknown";
+        if (src.includes("blogger.com")) source = "Blogger";
+        else if (src.includes("youtube.com")) source = "YouTube";
+        else if (src.includes("drive.google.com")) source = "Google Drive";
+        else if (src.includes("mp4upload")) source = "MP4Upload";
+
+        streamingLinks.push({
+          source,
           url: src,
+          quality: "Auto",
         });
       }
     });
 
     // Get download links
-    const downloads = {};
-    $(".entry-content a").each((i, el) => {
+    const downloadLinks = [];
+    $("a").each((i, el) => {
       const text = $(el).text().trim();
       const href = $(el).attr("href");
 
-      if (href && (text.includes("Download") || text.includes("480p") || text.includes("720p") || text.includes("1080p"))) {
-        const quality = text.match(/\d+p/) ? text.match(/\d+p/)[0] : "Unknown";
-        if (!downloads[quality]) {
-          downloads[quality] = [];
-        }
-        downloads[quality].push({
-          host: text,
+      if (href && text && (text.toLowerCase().includes("download") || text.includes("480p") || text.includes("720p") || text.includes("1080p") || text.includes("MP4") || text.includes("MKV"))) {
+        // Extract quality
+        const qualityMatch = text.match(/(\d+p)/i);
+        const quality = qualityMatch ? qualityMatch[1] : "Unknown";
+
+        // Determine host
+        let host = "Unknown";
+        if (href.includes("gofile")) host = "Gofile";
+        else if (href.includes("drive.google")) host = "Google Drive";
+        else if (href.includes("mega.nz")) host = "Mega";
+        else if (href.includes("mediafire")) host = "MediaFire";
+        else if (href.includes("zippyshare")) host = "ZippyShare";
+        else if (text.toLowerCase().includes("download")) host = text;
+
+        downloadLinks.push({
+          quality,
+          host,
           url: href,
         });
       }
@@ -134,8 +164,9 @@ async function scrapeDetail(slug) {
         title,
         thumb,
         synopsis,
-        episodeList,
-        downloads,
+        info,
+        streamingLinks,
+        downloadLinks,
       },
     };
   } catch (error) {
