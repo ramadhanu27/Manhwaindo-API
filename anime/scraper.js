@@ -1,125 +1,89 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
-const chromium = require("@sparticuz/chromium");
-const puppeteerCore = require("puppeteer-core");
 
 const BASE_URL = "https://otakudesu.best";
 
-// Helper function to get realistic browser headers (for axios requests)
-const getBrowserHeaders = (referer = BASE_URL) => ({
+// Helper function to get realistic browser headers
+const getBrowserHeaders = (referer = BASE_URL, cookie = "") => ({
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
   "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
   "Accept-Encoding": "gzip, deflate, br",
   Referer: referer,
+  Cookie: cookie,
   "Upgrade-Insecure-Requests": "1",
   "Sec-Fetch-Dest": "document",
   "Sec-Fetch-Mode": "navigate",
   "Sec-Fetch-Site": "same-origin",
   "Sec-Fetch-User": "?1",
+  "Cache-Control": "max-age=0",
+  Connection: "keep-alive",
 });
 
-// Global browser instance (reused across requests)
-let browserInstance = null;
-let browserLastUsed = Date.now();
-const BROWSER_TIMEOUT = 5 * 60 * 1000; // Close browser after 5 minutes of inactivity
+// Detect if running locally or in production
+const isLocal = () => {
+  return process.env.NODE_ENV === "development" || !process.env.VERCEL;
+};
 
-// Helper to launch browser (Puppeteer) - with reuse
-async function getBrowser() {
-  const isLocal = process.env.NODE_ENV === "development" || !process.env.AWS_REGION;
-
-  // Check if browser exists and is still connected
-  if (browserInstance && browserInstance.isConnected()) {
-    browserLastUsed = Date.now();
-    return browserInstance;
-  }
-
-  // Launch new browser
-  if (isLocal) {
-    // Local development: use full puppeteer
-    const puppeteer = require("puppeteer");
-    browserInstance = await puppeteer.launch({
-      headless: "new",
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage", // Reduce memory usage
-        "--disable-accelerated-2d-canvas",
-        "--no-first-run",
-        "--no-zygote",
-        "--disable-gpu",
-      ],
-    });
-  } else {
-    // Production (Vercel/Netlify): use puppeteer-core + chromium
-    browserInstance = await puppeteerCore.launch({
-      args: [...chromium.args, "--disable-dev-shm-usage"],
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-      ignoreHTTPSErrors: true,
-    });
-  }
-
-  browserLastUsed = Date.now();
-
-  // Auto-close browser after timeout
-  setTimeout(() => {
-    if (browserInstance && Date.now() - browserLastUsed > BROWSER_TIMEOUT) {
-      console.log("Closing idle browser...");
-      browserInstance.close();
-      browserInstance = null;
-    }
-  }, BROWSER_TIMEOUT);
-
-  return browserInstance;
-}
-
-// Helper to fetch content using Puppeteer (for protected pages)
-async function fetchWithPuppeteer(url) {
-  let page = null;
-  try {
-    const browser = await getBrowser();
-    page = await browser.newPage();
-
-    // Block unnecessary resources to speed up loading
-    await page.setRequestInterception(true);
-    page.on("request", (req) => {
-      const resourceType = req.resourceType();
-      if (["image", "stylesheet", "font", "media"].includes(resourceType)) {
-        req.abort(); // Block images, CSS, fonts to load faster
-      } else {
-        req.continue();
-      }
-    });
-
-    // Set User-Agent
-    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-
-    // Navigate to URL with faster settings
-    await page.goto(url, {
-      waitUntil: "domcontentloaded", // Changed from networkidle2 (faster)
-      timeout: 30000, // Reduced timeout
-    });
-
-    // Wait for critical element
+// Helper to fetch content with retry logic
+async function fetchWithRetry(url, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
     try {
-      await page.waitForSelector(".jdlrx, .venutama", { timeout: 5000 });
-    } catch (e) {
-      console.log("Timeout waiting for selector, continuing...");
-    }
+      // If local, try to use Puppeteer
+      if (isLocal()) {
+        try {
+          const puppeteer = require("puppeteer");
+          const browser = await puppeteer.launch({
+            headless: "new",
+            args: ["--no-sandbox", "--disable-setuid-sandbox"],
+          });
 
-    // Get HTML content
-    const content = await page.content();
-    return content;
-  } catch (error) {
-    console.error(`Puppeteer error for ${url}:`, error.message);
-    throw error;
-  } finally {
-    if (page) {
-      await page.close(); // Close page but keep browser alive
+          const page = await browser.newPage();
+          await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+
+          await page.goto(url, {
+            waitUntil: "domcontentloaded",
+            timeout: 30000,
+          });
+
+          const content = await page.content();
+          await browser.close();
+
+          return content;
+        } catch (puppeteerError) {
+          console.log("Puppeteer failed, falling back to axios:", puppeteerError.message);
+          // Fall through to axios
+        }
+      }
+
+      // Use axios (for production or if Puppeteer fails)
+      const response = await axios.get(url, {
+        headers: getBrowserHeaders(BASE_URL),
+        timeout: 15000,
+        maxRedirects: 5,
+        validateStatus: (status) => status < 500, // Accept 4xx responses
+      });
+
+      if (response.status === 403 || response.status === 503) {
+        // Wait before retry
+        await new Promise((resolve) => setTimeout(resolve, 2000 * (i + 1)));
+        continue;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(`Attempt ${i + 1} failed for ${url}:`, error.message);
+
+      if (i === maxRetries - 1) {
+        throw error;
+      }
+
+      // Exponential backoff
+      await new Promise((resolve) => setTimeout(resolve, 1000 * Math.pow(2, i)));
     }
   }
+
+  throw new Error(`Failed to fetch ${url} after ${maxRetries} attempts`);
 }
 
 /**
@@ -217,14 +181,14 @@ async function scrapeComplete(page = 1) {
 }
 
 /**
- * Scrape anime detail by slug (Uses Puppeteer)
+ * Scrape anime detail by slug
  */
 async function scrapeDetail(slug) {
   try {
     const url = `${BASE_URL}${slug}`;
 
-    // Use Puppeteer instead of Axios
-    const html = await fetchWithPuppeteer(url);
+    // Fetch with retry logic
+    const html = await fetchWithRetry(url);
     const $ = cheerio.load(html);
 
     // Get basic info
@@ -307,14 +271,14 @@ async function scrapeDetail(slug) {
 }
 
 /**
- * Scrape episode download and streaming links (Uses Puppeteer)
+ * Scrape episode download and streaming links
  */
 async function scrapeEpisode(slug) {
   try {
     const url = `${BASE_URL}${slug}`;
 
-    // Use Puppeteer instead of Axios
-    const html = await fetchWithPuppeteer(url);
+    // Fetch with retry logic
+    const html = await fetchWithRetry(url);
     const $ = cheerio.load(html);
 
     const title = $(".venutama h1").text().trim();
