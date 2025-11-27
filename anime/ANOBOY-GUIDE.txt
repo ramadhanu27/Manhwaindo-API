@@ -1,0 +1,50 @@
+# Anime API - Anoboy Source
+
+IMPORTANT: Anoboy Structure Differences
+
+Anoboy has DIFFERENT structure from Otakudesu:
+
+Otakudesu (Old):
+/anime/naruto-sub-indo/           → Anime detail page
+  ├─ /episode/naruto-episode-1/   → Episode 1
+  ├─ /episode/naruto-episode-2/   → Episode 2
+
+Anoboy (New):
+/naruto-episode-1-subtitle-indonesia/  → Direct to episode
+/naruto-episode-2-subtitle-indonesia/  → Direct to episode
+
+Conclusion:
+- Anoboy does NOT have anime detail page
+- Each episode is a separate page
+- To get all episodes, use Search API
+
+API Endpoints:
+
+1. Get Ongoing Anime
+   GET /api/anime/ongoing?page=1
+
+2. Get Episode Detail (Streaming & Download)
+   GET /api/anime/detail/:slug
+   Example: /api/anime/detail/kimi-to-koete-koi-ni-naru-episode-7-subtitle-indonesia/
+
+3. Search Anime (Get All Episodes)
+   GET /api/anime/search?q=naruto
+
+Migration Guide:
+
+Before (Otakudesu):
+1. GET /api/anime/detail/anime/naruto-sub-indo/
+2. Get episode list from response
+3. GET /api/anime/episode/episode/naruto-episode-1/
+
+After (Anoboy):
+1. GET /api/anime/search?q=naruto
+2. GET /api/anime/detail/naruto-episode-1-subtitle-indonesia/
+
+Slug Format:
+- Otakudesu: /anime/title-sub-indo/
+- Anoboy: /title-episode-X-subtitle-indonesia/
+
+Source: https://anoboy.gg/
+API Version: 2.0 (Anoboy)
+Last Updated: 2025-11-27

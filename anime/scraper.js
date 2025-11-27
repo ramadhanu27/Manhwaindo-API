@@ -187,6 +187,10 @@ async function scrapeEpisode(slug) {
 
 /**
  * Search anime
+ * NOTE: Anoboy structure is different from Otakudesu:
+ * - Each episode is a separate page (no anime detail page)
+ * - Search returns individual episodes, not anime series
+ * - To get all episodes of an anime, search by anime name
  */
 async function scrapeSearch(query) {
   try {
@@ -199,18 +203,31 @@ async function scrapeSearch(query) {
     const $ = cheerio.load(data);
     const results = [];
 
-    $("article.post").each((i, el) => {
+    // Anoboy uses article for search results
+    $("article").each((i, el) => {
       const $el = $(el);
-      const title = $el.find("h2.entry-title a").text().trim();
-      const slug = $el.find("h2.entry-title a").attr("href");
-      const thumb = $el.find("img").attr("src") || $el.find("img").attr("data-src");
-      const date = $el.find(".updated").text().trim();
+      const $link = $el.find("a").first();
+      const title = $link.attr("title") || "";
+      const slug = $link.attr("href") || "";
+      const thumb = $el.find("img").attr("src") || $el.find("img").attr("data-src") || "";
+
+      // Extract episode info
+      const episodeMatch = title.match(/Episode (\d+)/i);
+      const episode = episodeMatch ? `Episode ${episodeMatch[1]}` : "";
+
+      // Get type
+      const type = $el.find(".typez").text().trim();
+
+      // Get date
+      const date = $el.find("time").text().trim();
 
       if (title && slug) {
         results.push({
           title,
           slug: slug.replace(BASE_URL, ""),
           thumb,
+          episode,
+          type,
           date,
         });
       }

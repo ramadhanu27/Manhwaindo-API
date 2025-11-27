@@ -10,9 +10,9 @@ const { scrapeOngoing, scrapeComplete, scrapeDetail, scrapeEpisode, scrapeSearch
 router.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "Otakudesu Anime API",
+    message: "Anoboy Anime API",
     version: "1.0.0",
-    source: "https://otakudesu.best",
+    source: "https://anoboy.gg/",
     endpoints: {
       ongoing: "/api/anime/ongoing?page=1 (Get ongoing anime)",
       complete: "/api/anime/complete?page=1 (Get complete anime)",
@@ -167,16 +167,16 @@ router.get("/rust/*", async (req, res) => {
     const response = await axios.get(rustApiUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/plain, */*",
+        Accept: "application/json, text/plain, */*",
         "Accept-Language": "en-US,en;q=0.9",
         "Accept-Encoding": "gzip, deflate, br",
-        "Referer": "https://manhwaindo-api-rust.vercel.app/",
-        "Origin": "https://manhwaindo-api-rust.vercel.app",
+        Referer: "https://manhwaindo-api-rust.vercel.app/",
+        Origin: "https://manhwaindo-api-rust.vercel.app",
         "Sec-Fetch-Dest": "empty",
         "Sec-Fetch-Mode": "cors",
         "Sec-Fetch-Site": "same-origin",
         "Cache-Control": "no-cache",
-        "Pragma": "no-cache",
+        Pragma: "no-cache",
       },
       timeout: 30000,
     });
