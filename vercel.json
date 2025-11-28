@@ -1,17 +1,19 @@
 {
   "version": 2,
-  "buildCommand": "npm install",
-  "functions": {
-    "api/index.js": {
-      "memory": 1024,
-      "maxDuration": 30,
-      "runtime": "nodejs20.x"
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/api"
+      "dest": "server.js"
     }
-  ]
+  ],
+  "env": {
+    "BASE_URL": "https://manhwaindo.app",
+    "NODE_ENV": "production"
+  }
 }
