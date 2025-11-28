@@ -86,15 +86,33 @@ async function scrapeBrowse(filters = {}) {
   try {
     const { genre = "", status = "", type = "", order = "", page = 1 } = filters;
 
-    // Build URL with query parameters
-    const params = new URLSearchParams();
-    if (genre) params.append("genre", genre);
-    if (status) params.append("status", status);
-    if (type) params.append("type", type);
-    if (order) params.append("order", order);
-    if (page > 1) params.append("page", page);
+    let url;
 
-    const url = `${BASE_URL}/anime/?${params.toString()}`;
+    // If genre is specified, use /genres/{genre}/ path
+    if (genre) {
+      url = `${BASE_URL}/genres/${genre}/`;
+      // Add other params if needed
+      const params = new URLSearchParams();
+      if (status) params.append("status", status);
+      if (type) params.append("type", type);
+      if (order) params.append("order", order);
+      if (page > 1) params.append("page", page);
+
+      const queryString = params.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+    } else {
+      // Use /anime/ path with query parameters
+      const params = new URLSearchParams();
+      if (status) params.append("status", status);
+      if (type) params.append("type", type);
+      if (order) params.append("order", order);
+      if (page > 1) params.append("page", page);
+
+      url = `${BASE_URL}/anime/?${params.toString()}`;
+    }
+
     const { data } = await axios.get(url, {
       headers: getBrowserHeaders(),
       timeout: 15000,
