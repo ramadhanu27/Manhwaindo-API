@@ -334,13 +334,50 @@ async function scrapeSchedule() {
 }
 
 /**
- * Get genres list (Anoboy doesn't have genre list, return empty)
+ * Get genres list from Anoboy
  */
 async function scrapeGenres() {
-  return {
-    success: true,
-    data: [],
-  };
+  try {
+    // Scrape from search page which displays all genres
+    const url = `${BASE_URL}/?s=one`;
+    const { data } = await axios.get(url, {
+      headers: getBrowserHeaders(),
+      timeout: 15000,
+    });
+
+    const $ = cheerio.load(data);
+    const genres = [];
+    const seenGenres = new Set();
+
+    // Extract all genre links
+    $("a").each((i, el) => {
+      const href = $(el).attr("href") || "";
+      const text = $(el).text().trim();
+
+      if (href.includes("/genres/") && text && !seenGenres.has(text)) {
+        seenGenres.add(text);
+        genres.push({
+          name: text,
+          slug: href.replace(BASE_URL, ""),
+          url: href,
+        });
+      }
+    });
+
+    // Sort alphabetically
+    genres.sort((a, b) => a.name.localeCompare(b.name));
+
+    return {
+      success: true,
+      data: genres,
+    };
+  } catch (error) {
+    console.error("Error scraping genres:", error.message);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
 }
 
 module.exports = {
