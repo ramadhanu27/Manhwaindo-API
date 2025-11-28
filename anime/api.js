@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const { scrapeOngoing, scrapeComplete, scrapeDetail, scrapeEpisode, scrapeSearch, scrapeSchedule, scrapeGenres } = require("./scraper");
+const { scrapeOngoing, scrapeComplete, scrapeBrowse, scrapeDetail, scrapeEpisode, scrapeSearch, scrapeSchedule, scrapeGenres } = require("./scraper");
 
 /**
  * GET /api/anime
@@ -98,6 +98,31 @@ router.get("/complete", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const result = await scrapeComplete(page);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/anime/browse
+ * Browse anime with filters
+ * Query params: genre, status, type, order, page
+ * Example: /api/anime/browse?genre=action&status=ongoing&page=1
+ */
+router.get("/browse", async (req, res) => {
+  try {
+    const filters = {
+      genre: req.query.genre || "",
+      status: req.query.status || "",
+      type: req.query.type || "",
+      order: req.query.order || "",
+      page: parseInt(req.query.page) || 1,
+    };
+    const result = await scrapeBrowse(filters);
     res.json(result);
   } catch (error) {
     res.status(500).json({

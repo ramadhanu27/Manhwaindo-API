@@ -79,6 +79,75 @@ async function scrapeComplete(page = 1) {
 }
 
 /**
+ * Browse anime with filters
+ * @param {Object} filters - { genre, status, type, order, page }
+ */
+async function scrapeBrowse(filters = {}) {
+  try {
+    const { genre = "", status = "", type = "", order = "", page = 1 } = filters;
+
+    // Build URL with query parameters
+    const params = new URLSearchParams();
+    if (genre) params.append("genre", genre);
+    if (status) params.append("status", status);
+    if (type) params.append("type", type);
+    if (order) params.append("order", order);
+    if (page > 1) params.append("page", page);
+
+    const url = `${BASE_URL}/anime/?${params.toString()}`;
+    const { data } = await axios.get(url, {
+      headers: getBrowserHeaders(),
+      timeout: 15000,
+    });
+
+    const $ = cheerio.load(data);
+    const animeList = [];
+
+    // Scrape anime items
+    $("article").each((i, el) => {
+      const $el = $(el);
+      const $link = $el.find("a").first();
+      const title = $link.attr("title") || "";
+      const slug = $link.attr("href") || "";
+      const thumb = $el.find("img").attr("src") || $el.find("img").attr("data-src") || "";
+
+      // Get status badge
+      const statusBadge = $el.find(".status").text().trim();
+
+      // Get type
+      const typeText = $el.find(".typez").text().trim();
+
+      // Get rating if available
+      const rating = $el.find(".rating").text().trim();
+
+      if (title && slug) {
+        animeList.push({
+          title,
+          slug: slug.replace(BASE_URL, ""),
+          thumb,
+          status: statusBadge,
+          type: typeText,
+          rating,
+        });
+      }
+    });
+
+    return {
+      success: true,
+      page: parseInt(page),
+      filters: { genre, status, type, order },
+      data: animeList,
+    };
+  } catch (error) {
+    console.error("Error scraping browse:", error.message);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
+/**
  * Scrape anime detail/episode by slug
  */
 async function scrapeDetail(slug) {
@@ -383,6 +452,7 @@ async function scrapeGenres() {
 module.exports = {
   scrapeOngoing,
   scrapeComplete,
+  scrapeBrowse,
   scrapeDetail,
   scrapeEpisode,
   scrapeSearch,
