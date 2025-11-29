@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = "http://localhost:3000/api/anime";
+const API_BASE_URL = "https://rdapi.up.railway.app/api/anime";
 
 // Wait for DOM to be ready
 $(document).ready(function () {
@@ -67,7 +67,7 @@ function loadOngoingAnime(page = 1) {
     },
     error: function (xhr, status, error) {
       console.error("Error loading ongoing anime:", error);
-      showError("Failed to connect to API. Make sure the server is running on http://localhost:3000");
+      showError("Failed to connect to API. Please try again later.");
     },
   });
 }
@@ -182,14 +182,14 @@ function renderPlaceholderSlider() {
         <div class="slider-item">
             <div class="slider-wrapp">
                 <div class="thumb overlay">
-                    <img src="https://via.placeholder.com/1000x290/0c70de/ffffff?text=API+Not+Available" alt="Placeholder">
+                    <img src="https://via.placeholder.com/1000x290/0c70de/ffffff?text=Loading..." alt="Placeholder">
                 </div>
                 <div class="post-descript">
                     <div class="post-title">
-                        <h2 class="post-titlenya">API Server Not Running</h2>
+                        <h2 class="post-titlenya">Loading Anime Data...</h2>
                     </div>
                     <div class="post-sinop">
-                        <p>Please start the API server with: npm start</p>
+                        <p>Please wait while we fetch the latest anime episodes.</p>
                     </div>
                 </div>
             </div>
@@ -261,7 +261,7 @@ function showError(message) {
         <div style="padding: 20px; text-align: center; background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; margin: 10px;">
             <i class="fa fa-exclamation-triangle" style="color: #ff9800; font-size: 24px;"></i>
             <p style="margin: 10px 0; color: #856404;">${message}</p>
-            <p style="font-size: 12px; color: #666;">Make sure the API server is running: <code>npm start</code></p>
+            <p style="font-size: 12px; color: #666;">Please check your internet connection and try again.</p>
         </div>
     `;
   $(".blog-posts.hfeed.item").html(errorHTML);
