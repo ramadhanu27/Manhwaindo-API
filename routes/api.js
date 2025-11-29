@@ -383,7 +383,7 @@ router.get("/download-pdf/:slug(*)", async (req, res) => {
           timeout: 30000,
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            Referer: "https://manhwaindo.app/",
+            Referer: "https://www.manhwaindo.my/",
             Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
           },
         });

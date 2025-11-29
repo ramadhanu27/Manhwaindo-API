@@ -1,7 +1,7 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-const BASE_URL = process.env.BASE_URL || "https://manhwaindo.app";
+const BASE_URL = process.env.BASE_URL || "https://www.manhwaindo.my/";
 
 /**
  * Fetch HTML content from URL
