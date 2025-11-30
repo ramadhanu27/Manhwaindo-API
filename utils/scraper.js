@@ -40,7 +40,7 @@ async function scrapeLatest(page = 1) {
         const title = uta.find(".luf h4").text().trim();
         const url = uta.find("a.series").attr("href") || "";
         const slug = url.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
-        const image = uta.find(".imgu img").attr("src") || "";
+        const image = uta.find(".imgu img").attr("data-src") || uta.find(".imgu img").attr("src") || "";
         const type = "Manhwa"; // Default/Assumption for homepage items
         const rating = ""; // Homepage usually doesn't show rating in this view
 
@@ -72,7 +72,7 @@ async function scrapeLatest(page = 1) {
       $(".bsx").each((i, elem) => {
         const title = $(elem).find(".tt").text().trim();
         const slug = $(elem).find("a").attr("href")?.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
-        const image = $(elem).find("img").attr("src") || "";
+        const image = $(elem).find("img").attr("data-src") || $(elem).find("img").attr("src") || "";
         const type = $(elem).find(".type").text().trim();
         const rating = $(elem).find(".numscore").text().trim();
 
@@ -134,7 +134,7 @@ async function scrapePopular() {
     $(".popularslider .bsx").each((i, elem) => {
       const title = $(elem).find(".tt").text().trim();
       const slug = $(elem).find("a").attr("href")?.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
-      const image = $(elem).find("img").attr("src") || "";
+      const image = $(elem).find("img").attr("data-src") || $(elem).find("img").attr("src") || "";
       const type = $(elem).find(".type").text().trim();
       const rating = $(elem).find(".numscore").text().trim();
       const latestChapter = $(elem).find(".epxs").text().trim();
@@ -451,7 +451,7 @@ async function scrapeSearch(query) {
     $(".bsx").each((i, elem) => {
       const title = $(elem).find(".tt").text().trim();
       const slug = $(elem).find("a").attr("href")?.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
-      const image = $(elem).find("img").attr("src") || "";
+      const image = $(elem).find("img").attr("data-src") || $(elem).find("img").attr("src") || "";
       const type = $(elem).find(".type").text().trim();
       const rating = $(elem).find(".numscore").text().trim();
 
@@ -512,7 +512,7 @@ async function scrapeProjectUpdates(page = 1) {
         const title = uta.find(".luf h4").text().trim();
         const url = uta.find("a.series").attr("href") || "";
         const slug = url.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
-        const image = uta.find(".imgu img").attr("src") || "";
+        const image = uta.find(".imgu img").attr("data-src") || uta.find(".imgu img").attr("src") || "";
         const type = "Manhwa";
         const rating = "";
 
@@ -581,7 +581,7 @@ async function scrapeLastUpdate(page = 1) {
           const title = uta.find(".luf h4").text().trim();
           const url = uta.find("a.series").attr("href") || "";
           const slug = url.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
-          const image = uta.find(".imgu img").attr("src") || "";
+          const image = uta.find(".imgu img").attr("data-src") || uta.find(".imgu img").attr("src") || "";
           const type = "Manhwa";
           const rating = "";
 
@@ -614,7 +614,7 @@ async function scrapeLastUpdate(page = 1) {
       $(".bsx").each((i, elem) => {
         const title = $(elem).find(".tt").text().trim();
         const slug = $(elem).find("a").attr("href")?.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
-        const image = $(elem).find("img").attr("src") || "";
+        const image = $(elem).find("img").attr("data-src") || $(elem).find("img").attr("src") || "";
         const type = $(elem).find(".type").text().trim();
         const rating = $(elem).find(".numscore").text().trim();
 
@@ -698,7 +698,7 @@ async function scrapeSeriesList(page = 1, filters = {}) {
     $(".bsx").each((i, elem) => {
       const title = $(elem).find(".tt").text().trim();
       const slug = $(elem).find("a").attr("href")?.replace(BASE_URL, "").replace("/series/", "").replace(/\//g, "") || "";
-      const image = $(elem).find("img").attr("src") || "";
+      const image = $(elem).find("img").attr("data-src") || $(elem).find("img").attr("src") || "";
       const type = $(elem).find(".type").text().trim();
       const rating = $(elem).find(".numscore").text().trim();
       const latestChapter = $(elem).find(".epxs").text().trim();
