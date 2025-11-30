@@ -3,6 +3,13 @@ const cheerio = require("cheerio");
 
 const BASE_URL = "https://anoboy.gg";
 
+// Proxy options (fallback if direct request fails)
+const PROXY_OPTIONS = [
+  null, // Try direct first
+  "https://api.allorigins.win/raw?url=", // AllOrigins (free, reliable)
+  "https://corsproxy.io/?", // CORS Proxy (free)
+];
+
 // Helper function to get realistic browser headers
 const getBrowserHeaders = (referer = BASE_URL) => ({
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -20,16 +27,53 @@ const getBrowserHeaders = (referer = BASE_URL) => ({
 });
 
 /**
+ * Fetch HTML with proxy fallback
+ * @param {string} url - Target URL to fetch
+ * @returns {Promise<string>} HTML content
+ */
+async function fetchWithProxy(url) {
+  let lastError = null;
+
+  // Try each proxy option
+  for (const proxy of PROXY_OPTIONS) {
+    try {
+      const fetchUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
+
+      console.log(`[Fetch] Trying ${proxy ? "proxy" : "direct"}: ${fetchUrl.substring(0, 100)}...`);
+
+      const { data } = await axios.get(fetchUrl, {
+        headers: getBrowserHeaders(),
+        timeout: 20000,
+        maxRedirects: 5,
+      });
+
+      console.log(`[Fetch] Success with ${proxy ? "proxy" : "direct"}`);
+      return data;
+    } catch (error) {
+      lastError = error;
+      console.error(`[Fetch] Failed with ${proxy ? "proxy" : "direct"}: ${error.message}`);
+
+      // If it's not a 403/blocking error, don't try other proxies
+      if (error.response && error.response.status !== 403 && error.response.status !== 429) {
+        throw error;
+      }
+
+      // Continue to next proxy
+      continue;
+    }
+  }
+
+  // All proxies failed
+  throw lastError || new Error("All proxy attempts failed");
+}
+
+/**
  * Scrape ongoing/latest anime from homepage
  */
 async function scrapeOngoing(page = 1) {
   try {
     const url = page === 1 ? BASE_URL : `${BASE_URL}/page/${page}`;
-    const { data } = await axios.get(url, {
-      headers: getBrowserHeaders(),
-      timeout: 15000,
-    });
-
+    const data = await fetchWithProxy(url);
     const $ = cheerio.load(data);
     const animeList = [];
 
@@ -119,11 +163,7 @@ async function scrapeBrowse(filters = {}) {
       url = `${BASE_URL}/anime/?${params.toString()}`;
     }
 
-    const { data } = await axios.get(url, {
-      headers: getBrowserHeaders(),
-      timeout: 15000,
-    });
-
+    const data = await fetchWithProxy(url);
     const $ = cheerio.load(data);
     const animeList = [];
 
@@ -177,11 +217,7 @@ async function scrapeBrowse(filters = {}) {
 async function scrapeDetail(slug) {
   try {
     const url = `${BASE_URL}${slug}`;
-    const { data } = await axios.get(url, {
-      headers: getBrowserHeaders(),
-      timeout: 15000,
-    });
-
+    const data = await fetchWithProxy(url);
     const $ = cheerio.load(data);
 
     // Get basic info
@@ -365,11 +401,7 @@ async function scrapeEpisode(slug) {
 async function scrapeSearch(query) {
   try {
     const url = `${BASE_URL}/?s=${encodeURIComponent(query)}`;
-    const { data } = await axios.get(url, {
-      headers: getBrowserHeaders(),
-      timeout: 15000,
-    });
-
+    const data = await fetchWithProxy(url);
     const $ = cheerio.load(data);
     const results = [];
 
@@ -433,11 +465,7 @@ async function scrapeGenres() {
   try {
     // Scrape from search page which displays all genres
     const url = `${BASE_URL}/?s=one`;
-    const { data } = await axios.get(url, {
-      headers: getBrowserHeaders(),
-      timeout: 15000,
-    });
-
+    const data = await fetchWithProxy(url);
     const $ = cheerio.load(data);
     const genres = [];
     const seenGenres = new Set();
