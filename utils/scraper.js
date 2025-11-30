@@ -4,6 +4,42 @@ const cheerio = require("cheerio");
 const BASE_URL = process.env.BASE_URL || "https://www.manhwaindo.my/";
 
 /**
+ * Extract clean slug from URL
+ * @param {string} url - Full URL or partial URL
+ * @returns {string} Clean slug without slashes
+ */
+function extractSlug(url) {
+  if (!url) return "";
+
+  try {
+    // Try to parse as full URL
+    const urlObj = new URL(url);
+    let pathname = urlObj.pathname;
+
+    // Remove leading and trailing slashes
+    pathname = pathname.replace(/^\/+|\/+$/g, "");
+
+    // Remove /series/ prefix if exists
+    pathname = pathname.replace(/^series\//, "");
+
+    return pathname;
+  } catch (e) {
+    // If URL parsing fails, treat as relative path
+    let path = url;
+
+    // Remove BASE_URL if present
+    if (path.includes("manhwaindo")) {
+      path = path.split("/series/").pop() || path.split("/").pop() || "";
+    }
+
+    // Remove all slashes
+    path = path.replace(/\//g, "");
+
+    return path;
+  }
+}
+
+/**
  * Fetch HTML content from URL
  */
 async function fetchHTML(url) {
@@ -39,7 +75,7 @@ async function scrapeLatest(page = 1) {
         const uta = $(elem).find(".uta");
         const title = uta.find(".luf h4").text().trim();
         const url = uta.find("a.series").attr("href") || "";
-        const slug = url.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
+        const slug = extractSlug(url);
         const image = uta.find(".imgu img").attr("data-src") || uta.find(".imgu img").attr("src") || "";
         const type = "Manhwa"; // Default/Assumption for homepage items
         const rating = ""; // Homepage usually doesn't show rating in this view
@@ -52,7 +88,7 @@ async function scrapeLatest(page = 1) {
           chapters.push({
             title: link.text().trim(),
             url: link.attr("href") || "",
-            slug: link.attr("href")?.replace(BASE_URL, "").replace("/", "") || "",
+            slug: extractSlug(link.attr("href") || ""),
             time: timeSpan.text().trim() || "",
           });
         });
@@ -71,7 +107,7 @@ async function scrapeLatest(page = 1) {
       // Scrape from Series List (.bsx structure)
       $(".bsx").each((i, elem) => {
         const title = $(elem).find(".tt").text().trim();
-        const slug = $(elem).find("a").attr("href")?.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
+        const slug = extractSlug($(elem).find("a").attr("href") || "");
         const image = $(elem).find("img").attr("data-src") || $(elem).find("img").attr("src") || "";
         const type = $(elem).find(".type").text().trim();
         const rating = $(elem).find(".numscore").text().trim();
@@ -94,7 +130,7 @@ async function scrapeLatest(page = 1) {
             chapters.push({
               title: $(chap).text().trim(),
               url: $(chap).attr("href") || "",
-              slug: $(chap).attr("href")?.replace(BASE_URL, "").replace("/", "") || "",
+              slug: extractSlug($(chap).attr("href") || ""),
             });
           });
 
@@ -133,7 +169,8 @@ async function scrapePopular() {
 
     $(".popularslider .bsx").each((i, elem) => {
       const title = $(elem).find(".tt").text().trim();
-      const slug = $(elem).find("a").attr("href")?.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
+      const href = $(elem).find("a").attr("href") || "";
+      const slug = extractSlug(href);
       const image = $(elem).find("img").attr("data-src") || $(elem).find("img").attr("src") || "";
       const type = $(elem).find(".type").text().trim();
       const rating = $(elem).find(".numscore").text().trim();
@@ -450,7 +487,7 @@ async function scrapeSearch(query) {
 
     $(".bsx").each((i, elem) => {
       const title = $(elem).find(".tt").text().trim();
-      const slug = $(elem).find("a").attr("href")?.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
+      const slug = extractSlug($(elem).find("a").attr("href") || "");
       const image = $(elem).find("img").attr("data-src") || $(elem).find("img").attr("src") || "";
       const type = $(elem).find(".type").text().trim();
       const rating = $(elem).find(".numscore").text().trim();
@@ -511,7 +548,7 @@ async function scrapeProjectUpdates(page = 1) {
         const uta = $(elem).find(".uta");
         const title = uta.find(".luf h4").text().trim();
         const url = uta.find("a.series").attr("href") || "";
-        const slug = url.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
+        const slug = extractSlug(url);
         const image = uta.find(".imgu img").attr("data-src") || uta.find(".imgu img").attr("src") || "";
         const type = "Manhwa";
         const rating = "";
@@ -524,7 +561,7 @@ async function scrapeProjectUpdates(page = 1) {
           chapters.push({
             title: link.text().trim(),
             url: link.attr("href") || "",
-            slug: link.attr("href")?.replace(BASE_URL, "").replace("/", "") || "",
+            slug: extractSlug(link.attr("href") || ""),
             time: timeSpan.text().trim() || "",
           });
         });
@@ -580,7 +617,7 @@ async function scrapeLastUpdate(page = 1) {
           const uta = $(elem).find(".uta");
           const title = uta.find(".luf h4").text().trim();
           const url = uta.find("a.series").attr("href") || "";
-          const slug = url.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
+          const slug = extractSlug(url);
           const image = uta.find(".imgu img").attr("data-src") || uta.find(".imgu img").attr("src") || "";
           const type = "Manhwa";
           const rating = "";
@@ -593,7 +630,7 @@ async function scrapeLastUpdate(page = 1) {
             chapters.push({
               title: link.text().trim(),
               url: link.attr("href") || "",
-              slug: link.attr("href")?.replace(BASE_URL, "").replace("/", "") || "",
+              slug: extractSlug(link.attr("href") || ""),
               time: timeSpan.text().trim() || "",
             });
           });
@@ -613,7 +650,7 @@ async function scrapeLastUpdate(page = 1) {
       // Scrape from Series List (.bsx structure) - no time information
       $(".bsx").each((i, elem) => {
         const title = $(elem).find(".tt").text().trim();
-        const slug = $(elem).find("a").attr("href")?.replace(BASE_URL, "").replace("/series/", "").replace("/", "") || "";
+        const slug = extractSlug($(elem).find("a").attr("href") || "");
         const image = $(elem).find("img").attr("data-src") || $(elem).find("img").attr("src") || "";
         const type = $(elem).find(".type").text().trim();
         const rating = $(elem).find(".numscore").text().trim();
@@ -697,7 +734,7 @@ async function scrapeSeriesList(page = 1, filters = {}) {
     // Scrape from series grid (.bsx structure)
     $(".bsx").each((i, elem) => {
       const title = $(elem).find(".tt").text().trim();
-      const slug = $(elem).find("a").attr("href")?.replace(BASE_URL, "").replace("/series/", "").replace(/\//g, "") || "";
+      const slug = extractSlug($(elem).find("a").attr("href") || "");
       const image = $(elem).find("img").attr("data-src") || $(elem).find("img").attr("src") || "";
       const type = $(elem).find(".type").text().trim();
       const rating = $(elem).find(".numscore").text().trim();

@@ -95,4 +95,15 @@ app.listen(PORT, () => {
   `);
 });
 
-module.exports = app;
+// Cache clear endpoint (for development/debugging)
+app.get("/api/cache/clear", (req, res) => {
+  const keys = cache.keys();
+  cache.flushAll();
+  res.json({
+    success: true,
+    message: "Cache cleared",
+    clearedKeys: keys.length,
+  });
+});
+
+module.exports = { app, cache };
