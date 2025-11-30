@@ -13,7 +13,7 @@
     }
   ],
   "env": {
-    "BASE_URL": "https://manhwaindo.app",
+    "BASE_URL": "https://www.manhwaindo.my/",
     "NODE_ENV": "production"
   }
 }

@@ -106,4 +106,4 @@ app.get("/api/cache/clear", (req, res) => {
   });
 });
 
-module.exports = { app, cache };
+module.exports = app;
