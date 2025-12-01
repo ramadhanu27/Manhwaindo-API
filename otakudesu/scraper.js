@@ -257,14 +257,17 @@ async function scrapeEpisode(slug) {
 
     const title = $(".posttl").text().trim();
 
-    // Get streaming links
+    // Get streaming links - they use data-content attribute
     const streamingLinks = [];
     $(".mirrorstream ul li").each((i, el) => {
       const $el = $(el);
       const quality = $el.find("strong").text().trim();
-      const link = $el.find("a").attr("href") || "";
+      const $link = $el.find("a");
 
-      if (link) {
+      // Try data-content first (for iframe embed), then href
+      const link = $link.attr("data-content") || $link.attr("href") || "";
+
+      if (link && link !== "#") {
         streamingLinks.push({
           quality,
           url: link,
@@ -283,7 +286,7 @@ async function scrapeEpisode(slug) {
         const host = $(linkEl).text().trim();
         const url = $(linkEl).attr("href") || "";
 
-        if (url) {
+        if (url && url !== "#") {
           links.push({
             host,
             url,
