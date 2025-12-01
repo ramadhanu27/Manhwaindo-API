@@ -252,10 +252,12 @@ async function scrapeDetail(slug) {
 async function scrapeEpisode(slug) {
   try {
     const url = `${BASE_URL}${slug}`;
+    console.log(`[Otakudesu Episode] Fetching: ${url}`);
     const data = await fetchWithProxy(url);
     const $ = cheerio.load(data);
 
     const title = $(".posttl").text().trim();
+    console.log(`[Otakudesu Episode] Title: ${title}`);
 
     // Get streaming links - they use data-content attribute with base64 encoded JSON
     const streamingLinks = [];
