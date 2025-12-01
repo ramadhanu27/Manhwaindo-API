@@ -53,6 +53,10 @@ const cacheMiddleware = (duration) => (req, res, next) => {
   }
 };
 
+// Test endpoint (no cache) - to verify env variables
+const testRoutes = require("./otakudesu/test");
+app.use("/api/otakudesu", testRoutes);
+
 // Routes with Cache
 // Anime APIs: 30 minutes cache (data rarely changes, may use proxy)
 app.use("/api/anime", cacheMiddleware(1800), animeRoutes);
