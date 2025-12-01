@@ -3,6 +3,9 @@ const cheerio = require("cheerio");
 
 const BASE_URL = "https://otakudesu.best";
 
+// Cloudflare Worker proxy (primary option for Vercel deployment)
+const CLOUDFLARE_WORKER = process.env.CLOUDFLARE_WORKER_URL || null;
+
 // Proxy options (fallback if direct request fails)
 const PROXY_OPTIONS = [
   null, // Try direct first
@@ -44,38 +47,6 @@ const randomDelay = (min = 500, max = 1500) => {
 
 /**
  * Fetch HTML with proxy fallback
- * @param {string} url - Target URL to fetch
- * @returns {Promise<string>} HTML content
- */
-async function fetchWithProxy(url) {
-  let lastError = null;
-
-  // Try each proxy option
-  for (const proxy of PROXY_OPTIONS) {
-    try {
-      const fetchUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
-
-      console.log(`[Otakudesu Fetch] Trying ${proxy ? "proxy" : "direct"}: ${fetchUrl.substring(0, 100)}...`);
-
-      const { data } = await axios.get(fetchUrl, {
-        headers: getBrowserHeaders(),
-        timeout: 30000, // Increased for Vercel
-        maxRedirects: 5,
-      });
-
-      console.log(`[Otakudesu Fetch] Success with ${proxy ? "proxy" : "direct"}`);
-      return data;
-    } catch (error) {
-      lastError = error;
-      console.error(`[Otakudesu Fetch] Failed with ${proxy ? "proxy" : "direct"}: ${error.message}`);
-
-      // If it's not a 403/blocking error, don't try other proxies
-      if (error.response && error.response.status !== 403 && error.response.status !== 429) {
-        throw error;
-      }
-
-      // Continue to next proxy
-      continue;
     }
   }
 
