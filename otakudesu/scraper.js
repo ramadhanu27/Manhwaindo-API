@@ -298,6 +298,21 @@ async function scrapeEpisode(slug) {
       }
     });
 
+    // Also get the actual iframe src from player-embed
+    const iframeSrc = $("#pembed iframe").attr("src") || "";
+    if (iframeSrc) {
+      // Add iframe URL to first streaming link or create new entry
+      if (streamingLinks.length > 0) {
+        streamingLinks[0].iframeSrc = iframeSrc;
+      } else {
+        streamingLinks.push({
+          quality: "default",
+          url: iframeSrc,
+          iframeSrc: iframeSrc,
+        });
+      }
+    }
+
     // Get download links
     const downloadLinks = [];
     $(".download ul li").each((i, el) => {
