@@ -68,34 +68,41 @@ async function fetchWithProxy(url) {
 }
 
 /**
- * Scrape ongoing anime from homepage
+ * Scrape ongoing anime from ongoing-anime page
  */
 async function scrapeOngoing(page = 1) {
   try {
-    const url = page === 1 ? BASE_URL : `${BASE_URL}/page/${page}`;
+    const url = page === 1 ? `${BASE_URL}/ongoing-anime/` : `${BASE_URL}/ongoing-anime/page/${page}`;
     const data = await fetchWithProxy(url);
     const $ = cheerio.load(data);
     const animeList = [];
 
-    // Otakudesu uses .venz ul li for ongoing anime
-    $(".venz ul li").each((i, el) => {
+    // Otakudesu ongoing page uses .detpost for each anime
+    $(".detpost").each((i, el) => {
       const $el = $(el);
-      const $link = $el.find(".thumb a");
-      const title = $link.attr("title") || "";
-      const slug = $link.attr("href") || "";
-      const thumb = $link.find("img").attr("src") || "";
+
+      // Get thumbnail
+      const $thumb = $el.find(".thumb");
+      const thumbImg = $thumb.find("img").attr("src") || "";
+      const animeLink = $thumb.find("a").attr("href") || "";
+
+      // Get title from h2
+      const title = $el.find("h2").text().trim();
 
       // Get episode info
-      const episodeText = $el.find(".epz").text().trim();
-      const dateText = $el.find(".newnime").text().trim();
+      const episodeText = $el.find(".epztipe").text().trim();
 
-      if (title && slug) {
+      // Get release day
+      const dayText = $el.find(".newnime").text().trim();
+
+      if (title && animeLink) {
         animeList.push({
           title,
-          slug: slug.replace(BASE_URL, ""),
-          thumb,
+          slug: animeLink.replace(BASE_URL, ""),
+          thumb: thumbImg,
           episode: episodeText,
-          date: dateText,
+          releaseDay: dayText,
+          url: animeLink,
         });
       }
     });
@@ -103,6 +110,7 @@ async function scrapeOngoing(page = 1) {
     return {
       success: true,
       page,
+      totalAnime: animeList.length,
       data: animeList,
     };
   } catch (error) {
