@@ -931,6 +931,292 @@
                     </div>
                 </div>
             </div>
+
+            <!-- OTAKUDESU API SECTION -->
+            <div class="mb-16">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-white mb-2">🎬 Otakudesu Anime API</h2>
+                    <p class="text-slate-400">Akses ribuan anime dengan streaming & download links dari Otakudesu.best
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Otakudesu Endpoint 1: Ongoing Anime -->
+                    <div
+                        class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                                <a href="/api/otakudesu/ongoing?page=1" target="_blank"
+                                    class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                                    /api/otakudesu/ongoing
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <p class="mb-6 text-slate-400">Get ongoing anime with release schedule. Supports pagination.</p>
+
+                        <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                            <button onclick="copyToClipboard(this)"
+                                class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                            <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/otakudesu/ongoing?page=1"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="json-key">"response"</span>: {
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"page"</span>: <span class="json-number">1</span>,
+  <span class="json-key">"data"</span>: [{
+    <span class="json-key">"title"</span>: <span class="json-string">"One Piece"</span>,
+    <span class="json-key">"slug"</span>: <span class="json-string">"/anime/1piece-sub-indo/"</span>,
+    <span class="json-key">"episode"</span>: <span class="json-string">"Episode 1151"</span>,
+    <span class="json-key">"releaseDay"</span>: <span class="json-string">"Minggu"</span>
+  }]
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Otakudesu Endpoint 2: Complete Anime -->
+                    <div
+                        class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                                <a href="/api/otakudesu/complete?page=1" target="_blank"
+                                    class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                                    /api/otakudesu/complete
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <p class="mb-6 text-slate-400">Get completed anime series. Supports pagination.</p>
+
+                        <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                            <button onclick="copyToClipboard(this)"
+                                class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                            <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/otakudesu/complete?page=1"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="json-key">"response"</span>: {
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"page"</span>: <span class="json-number">1</span>,
+  <span class="json-key">"data"</span>: [...]
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Otakudesu Endpoint 3: Anime Detail -->
+                    <div
+                        class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                                <a href="/api/otakudesu/anime/1piece-sub-indo" target="_blank"
+                                    class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                                    /api/otakudesu/anime/:slug
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <p class="mb-6 text-slate-400">Get anime details with synopsis, genres, and episode list.</p>
+
+                        <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                            <button onclick="copyToClipboard(this)"
+                                class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                            <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/otakudesu/anime/1piece-sub-indo"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="json-key">"response"</span>: {
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"title"</span>: <span class="json-string">"One Piece"</span>,
+    <span class="json-key">"synopsis"</span>: <span class="json-string">"..."</span>,
+    <span class="json-key">"genres"</span>: [...],
+    <span class="json-key">"episodeList"</span>: [...]
+  }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Otakudesu Endpoint 4: Episode Detail -->
+                    <div
+                        class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                                <a href="/api/otakudesu/episode/awkn-episode-9-sub-indo" target="_blank"
+                                    class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                                    /api/otakudesu/episode/:slug
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <p class="mb-6 text-slate-400">Get episode with streaming & download links (multiple qualities).
+                        </p>
+
+                        <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                            <button onclick="copyToClipboard(this)"
+                                class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                            <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/otakudesu/episode/awkn-episode-9-sub-indo"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="json-key">"response"</span>: {
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"streamingLinks"</span>: [{
+      <span class="json-key">"quality"</span>: <span class="json-string">"360p"</span>,
+      <span class="json-key">"iframeSrc"</span>: <span class="json-string">"https://desustream.info/..."</span>
+    }],
+    <span class="json-key">"downloadLinks"</span>: [...]
+  }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Otakudesu Endpoint 5: Search -->
+                    <div
+                        class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                                <a href="/api/otakudesu/search?q=one piece" target="_blank"
+                                    class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                                    /api/otakudesu/search
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <p class="mb-6 text-slate-400">Search anime by title with detailed results.</p>
+
+                        <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                            <button onclick="copyToClipboard(this)"
+                                class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                            <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/otakudesu/search?q=one piece"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="json-key">"response"</span>: {
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"query"</span>: <span class="json-string">"one piece"</span>,
+  <span class="json-key">"data"</span>: [...]
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Otakudesu Endpoint 6: Schedule -->
+                    <div
+                        class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                                <a href="/api/otakudesu/schedule" target="_blank"
+                                    class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                                    /api/otakudesu/schedule
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <p class="mb-6 text-slate-400">Get anime release schedule by day (Senin-Minggu).</p>
+
+                        <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                            <button onclick="copyToClipboard(this)"
+                                class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                            <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/otakudesu/schedule"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="json-key">"response"</span>: {
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"Senin"</span>: [...],
+    <span class="json-key">"Minggu"</span>: [...]
+  }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Otakudesu Endpoint 7: Genres -->
+                    <div
+                        class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                                <a href="/api/otakudesu/genres" target="_blank"
+                                    class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                                    /api/otakudesu/genres
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <p class="mb-6 text-slate-400">Get all available anime genres.</p>
+
+                        <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                            <button onclick="copyToClipboard(this)"
+                                class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                            <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/otakudesu/genres"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="json-key">"response"</span>: {
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"totalGenres"</span>: <span class="json-number">50</span>,
+  <span class="json-key">"data"</span>: [...]
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
