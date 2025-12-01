@@ -258,6 +258,9 @@ async function scrapeEpisode(slug) {
 
     const title = $(".posttl").text().trim();
     console.log(`[Otakudesu Episode] Title: ${title}`);
+    console.log(`[Otakudesu Episode] HTML length: ${data.length}`);
+    console.log(`[Otakudesu Episode] .mirrorstream count: ${$(".mirrorstream ul li").length}`);
+    console.log(`[Otakudesu Episode] .download count: ${$(".download ul li").length}`);
 
     // Get streaming links - they use data-content attribute with base64 encoded JSON
     const streamingLinks = [];
