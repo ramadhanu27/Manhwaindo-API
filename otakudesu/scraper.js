@@ -257,20 +257,43 @@ async function scrapeEpisode(slug) {
 
     const title = $(".posttl").text().trim();
 
-    // Get streaming links - they use data-content attribute
+    // Get streaming links - they use data-content attribute with base64 encoded JSON
     const streamingLinks = [];
     $(".mirrorstream ul li").each((i, el) => {
       const $el = $(el);
-      const quality = $el.find("strong").text().trim();
       const $link = $el.find("a");
 
       // Try data-content first (for iframe embed), then href
-      const link = $link.attr("data-content") || $link.attr("href") || "";
+      const dataContent = $link.attr("data-content") || "";
+      const href = $link.attr("href") || "";
 
-      if (link && link !== "#") {
+      let quality = "";
+      let url = "";
+
+      if (dataContent && dataContent !== "#") {
+        // data-content contains base64 encoded JSON with quality info
+        try {
+          // Decode base64
+          const decoded = Buffer.from(dataContent, "base64").toString("utf-8");
+          const data = JSON.parse(decoded);
+
+          // Extract quality from decoded data
+          quality = data.q || data.quality || "";
+          url = dataContent; // Keep the encoded data as URL for the player
+        } catch (e) {
+          // If decode fails, use as-is
+          quality = $el.find("strong").text().trim();
+          url = dataContent;
+        }
+      } else if (href && href !== "#") {
+        quality = $el.find("strong").text().trim();
+        url = href;
+      }
+
+      if (url) {
         streamingLinks.push({
           quality,
-          url: link,
+          url,
         });
       }
     });
