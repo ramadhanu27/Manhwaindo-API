@@ -12,20 +12,35 @@ const PROXY_OPTIONS = [
 ];
 
 // Helper function to get realistic browser headers
-const getBrowserHeaders = (referer = BASE_URL) => ({
-  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-  "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
-  "Accept-Encoding": "gzip, deflate, br",
-  Connection: "keep-alive",
-  "Upgrade-Insecure-Requests": "1",
-  Referer: referer,
-  "Sec-Fetch-Dest": "document",
-  "Sec-Fetch-Mode": "navigate",
-  "Sec-Fetch-Site": "same-origin",
-  "Sec-Fetch-User": "?1",
-  "Cache-Control": "max-age=0",
-});
+const getBrowserHeaders = (referer = BASE_URL) => {
+  // Rotate user agents to avoid detection
+  const userAgents = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  ];
+
+  return {
+    "User-Agent": userAgents[Math.floor(Math.random() * userAgents.length)],
+    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+    Connection: "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    Referer: referer,
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "same-origin",
+    "Sec-Fetch-User": "?1",
+    "Cache-Control": "max-age=0",
+  };
+};
+
+// Helper function for random delay (anti-bot)
+const randomDelay = (min = 500, max = 1500) => {
+  return new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1)) + min));
+};
 
 /**
  * Fetch HTML with proxy fallback
@@ -174,193 +189,238 @@ async function scrapeComplete(page = 1) {
  * Scrape anime detail by slug
  */
 async function scrapeDetail(slug) {
-  try {
-    const url = `${BASE_URL}${slug}`;
-    const data = await fetchWithProxy(url);
-    const $ = cheerio.load(data);
+  // Retry up to 3 times with delays
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const url = `${BASE_URL}${slug}`;
+      console.log(`[Otakudesu Detail] Attempt ${attempt}/3 - Fetching: ${url}`);
 
-    // Get basic info
-    const title = $(".jdlrx h1").text().trim();
-    const thumb = $(".fotoanime img").attr("src") || "";
-
-    // Get anime info
-    const animeInfo = {};
-    $(".infozingle p").each((i, el) => {
-      const $el = $(el);
-      const text = $el.text().trim();
-      const [key, ...valueParts] = text.split(":");
-      const value = valueParts.join(":").trim();
-
-      if (key && value) {
-        const cleanKey = key.toLowerCase().replace(/\s+/g, "_");
-        animeInfo[cleanKey] = value;
+      // Add random delay before fetch (anti-bot)
+      if (attempt > 1) {
+        await randomDelay(1000, 2000);
       }
-    });
 
-    // Get synopsis
-    const synopsis = $(".sinopc").text().trim();
+      const data = await fetchWithProxy(url);
+      const $ = cheerio.load(data);
 
-    // Get genres
-    const genres = [];
-    $(".infozingle .genre-info a").each((i, el) => {
-      const genre = $(el).text().trim();
-      if (genre) genres.push(genre);
-    });
+      // Get basic info
+      const title = $(".jdlrx h1").text().trim();
+      const thumb = $(".fotoanime img").attr("src") || "";
 
-    // Get episode list
-    const episodeList = [];
-    $(".episodelist ul li").each((i, el) => {
-      const $el = $(el);
-      const $link = $el.find("a");
-      const episodeTitle = $link.text().trim();
-      const episodeUrl = $link.attr("href") || "";
-      const episodeDate = $el.find(".zeebr").text().trim();
+      // Get anime info
+      const animeInfo = {};
+      $(".infozingle p").each((i, el) => {
+        const $el = $(el);
+        const text = $el.text().trim();
+        const [key, ...valueParts] = text.split(":");
+        const value = valueParts.join(":").trim();
 
-      if (episodeTitle && episodeUrl) {
-        episodeList.push({
-          title: episodeTitle,
-          slug: episodeUrl.replace(BASE_URL, ""),
-          url: episodeUrl,
-          date: episodeDate,
-        });
+        if (key && value) {
+          const cleanKey = key.toLowerCase().replace(/\s+/g, "_");
+          animeInfo[cleanKey] = value;
+        }
+      });
+
+      // Get synopsis
+      const synopsis = $(".sinopc").text().trim();
+
+      // Get genres
+      const genres = [];
+      $(".infozingle .genre-info a").each((i, el) => {
+        const genre = $(el).text().trim();
+        if (genre) genres.push(genre);
+      });
+
+      // Get episode list
+      const episodeList = [];
+      $(".episodelist ul li").each((i, el) => {
+        const $el = $(el);
+        const $link = $el.find("a");
+        const episodeTitle = $link.text().trim();
+        const episodeUrl = $link.attr("href") || "";
+        const episodeDate = $el.find(".zeebr").text().trim();
+
+        if (episodeTitle && episodeUrl) {
+          episodeList.push({
+            title: episodeTitle,
+            slug: episodeUrl.replace(BASE_URL, ""),
+            url: episodeUrl,
+            date: episodeDate,
+          });
+        }
+      });
+
+      return {
+        success: true,
+        data: {
+          title,
+          thumb,
+          synopsis,
+          genres,
+          info: animeInfo,
+          episodeList,
+          totalEpisodes: episodeList.length,
+        },
+      };
+    } catch (error) {
+      console.error(`[Otakudesu Detail] Attempt ${attempt}/3 failed:`, error.message);
+
+      // If this was the last attempt, return error
+      if (attempt === 3) {
+        return {
+          success: false,
+          message: error.message,
+        };
       }
-    });
 
-    return {
-      success: true,
-      data: {
-        title,
-        thumb,
-        synopsis,
-        genres,
-        info: animeInfo,
-        episodeList,
-        totalEpisodes: episodeList.length,
-      },
-    };
-  } catch (error) {
-    console.error("Error scraping detail:", error.message);
-    return {
-      success: false,
-      message: error.message,
-    };
+      // Otherwise, continue to next attempt
+      continue;
+    }
   }
+
+  // Fallback (should never reach here)
+  return {
+    success: false,
+    message: "All retry attempts failed",
+  };
 }
 
 /**
  * Scrape episode detail (streaming & download links)
  */
 async function scrapeEpisode(slug) {
-  try {
-    const url = `${BASE_URL}${slug}`;
-    console.log(`[Otakudesu Episode] Fetching: ${url}`);
-    const data = await fetchWithProxy(url);
-    const $ = cheerio.load(data);
+  // Retry up to 3 times with delays
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const url = `${BASE_URL}${slug}`;
+      console.log(`[Otakudesu Episode] Attempt ${attempt}/3 - Fetching: ${url}`);
 
-    const title = $(".posttl").text().trim();
-    console.log(`[Otakudesu Episode] Title: ${title}`);
-    console.log(`[Otakudesu Episode] HTML length: ${data.length}`);
-    console.log(`[Otakudesu Episode] .mirrorstream count: ${$(".mirrorstream ul li").length}`);
-    console.log(`[Otakudesu Episode] .download count: ${$(".download ul li").length}`);
+      // Add random delay before fetch (anti-bot)
+      if (attempt > 1) {
+        await randomDelay(1000, 2000);
+      }
 
-    // Get streaming links - they use data-content attribute with base64 encoded JSON
-    const streamingLinks = [];
-    $(".mirrorstream ul li").each((i, el) => {
-      const $el = $(el);
-      const $link = $el.find("a");
+      const data = await fetchWithProxy(url);
+      const $ = cheerio.load(data);
 
-      // Try data-content first (for iframe embed), then href
-      const dataContent = $link.attr("data-content") || "";
-      const href = $link.attr("href") || "";
+      const title = $(".posttl").text().trim();
+      console.log(`[Otakudesu Episode] Title: ${title}`);
+      console.log(`[Otakudesu Episode] HTML length: ${data.length}`);
+      console.log(`[Otakudesu Episode] .mirrorstream count: ${$(".mirrorstream ul li").length}`);
+      console.log(`[Otakudesu Episode] .download count: ${$(".download ul li").length}`);
 
-      let quality = "";
-      let url = "";
+      // Get streaming links - they use data-content attribute with base64 encoded JSON
+      const streamingLinks = [];
+      $(".mirrorstream ul li").each((i, el) => {
+        const $el = $(el);
+        const $link = $el.find("a");
 
-      if (dataContent && dataContent !== "#") {
-        // data-content contains base64 encoded JSON with quality info
-        try {
-          // Decode base64
-          const decoded = Buffer.from(dataContent, "base64").toString("utf-8");
-          const data = JSON.parse(decoded);
+        // Try data-content first (for iframe embed), then href
+        const dataContent = $link.attr("data-content") || "";
+        const href = $link.attr("href") || "";
 
-          // Extract quality from decoded data
-          quality = data.q || data.quality || "";
-          url = dataContent; // Keep the encoded data as URL for the player
-        } catch (e) {
-          // If decode fails, use as-is
+        let quality = "";
+        let url = "";
+
+        if (dataContent && dataContent !== "#") {
+          // data-content contains base64 encoded JSON with quality info
+          try {
+            // Decode base64
+            const decoded = Buffer.from(dataContent, "base64").toString("utf-8");
+            const data = JSON.parse(decoded);
+
+            // Extract quality from decoded data
+            quality = data.q || data.quality || "";
+            url = dataContent; // Keep the encoded data as URL for the player
+          } catch (e) {
+            // If decode fails, use as-is
+            quality = $el.find("strong").text().trim();
+            url = dataContent;
+          }
+        } else if (href && href !== "#") {
           quality = $el.find("strong").text().trim();
-          url = dataContent;
+          url = href;
         }
-      } else if (href && href !== "#") {
-        quality = $el.find("strong").text().trim();
-        url = href;
-      }
 
-      if (url) {
-        streamingLinks.push({
-          quality,
-          url,
-        });
-      }
-    });
-
-    // Also get the actual iframe src from player-embed
-    const iframeSrc = $("#pembed iframe").attr("src") || "";
-    if (iframeSrc) {
-      // Add iframe URL to first streaming link or create new entry
-      if (streamingLinks.length > 0) {
-        streamingLinks[0].iframeSrc = iframeSrc;
-      } else {
-        streamingLinks.push({
-          quality: "default",
-          url: iframeSrc,
-          iframeSrc: iframeSrc,
-        });
-      }
-    }
-
-    // Get download links
-    const downloadLinks = [];
-    $(".download ul li").each((i, el) => {
-      const $el = $(el);
-      const quality = $el.find("strong").text().trim();
-
-      const links = [];
-      $el.find("a").each((j, linkEl) => {
-        const host = $(linkEl).text().trim();
-        const url = $(linkEl).attr("href") || "";
-
-        if (url && url !== "#") {
-          links.push({
-            host,
+        if (url) {
+          streamingLinks.push({
+            quality,
             url,
           });
         }
       });
 
-      if (quality && links.length > 0) {
-        downloadLinks.push({
-          quality,
-          links,
-        });
+      // Also get the actual iframe src from player-embed
+      const iframeSrc = $("#pembed iframe").attr("src") || "";
+      if (iframeSrc) {
+        // Add iframe URL to first streaming link or create new entry
+        if (streamingLinks.length > 0) {
+          streamingLinks[0].iframeSrc = iframeSrc;
+        } else {
+          streamingLinks.push({
+            quality: "default",
+            url: iframeSrc,
+            iframeSrc: iframeSrc,
+          });
+        }
       }
-    });
 
-    return {
-      success: true,
-      data: {
-        title,
-        streamingLinks,
-        downloadLinks,
-      },
-    };
-  } catch (error) {
-    console.error("Error scraping episode:", error.message);
-    return {
-      success: false,
-      message: error.message,
-    };
+      // Get download links
+      const downloadLinks = [];
+      $(".download ul li").each((i, el) => {
+        const $el = $(el);
+        const quality = $el.find("strong").text().trim();
+
+        const links = [];
+        $el.find("a").each((j, linkEl) => {
+          const host = $(linkEl).text().trim();
+          const url = $(linkEl).attr("href") || "";
+
+          if (url && url !== "#") {
+            links.push({
+              host,
+              url,
+            });
+          }
+        });
+
+        if (quality && links.length > 0) {
+          downloadLinks.push({
+            quality,
+            links,
+          });
+        }
+      });
+
+      return {
+        success: true,
+        data: {
+          title,
+          streamingLinks,
+          downloadLinks,
+        },
+      };
+    } catch (error) {
+      console.error(`[Otakudesu Episode] Attempt ${attempt}/3 failed:`, error.message);
+
+      // If this was the last attempt, return error
+      if (attempt === 3) {
+        return {
+          success: false,
+          message: error.message,
+        };
+      }
+
+      // Otherwise, continue to next attempt
+      continue;
+    }
   }
+
+  // Fallback (should never reach here)
+  return {
+    success: false,
+    message: "All retry attempts failed",
+  };
 }
 
 /**
