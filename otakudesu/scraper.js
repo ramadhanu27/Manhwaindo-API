@@ -8,6 +8,7 @@ const PROXY_OPTIONS = [
   null, // Try direct first
   "https://api.allorigins.win/raw?url=", // AllOrigins (free, reliable)
   "https://corsproxy.io/?", // CORS Proxy (free)
+  "https://api.codetabs.com/v1/proxy?quest=", // CodeTabs proxy
 ];
 
 // Helper function to get realistic browser headers
@@ -43,7 +44,7 @@ async function fetchWithProxy(url) {
 
       const { data } = await axios.get(fetchUrl, {
         headers: getBrowserHeaders(),
-        timeout: 20000,
+        timeout: 30000, // Increased for Vercel
         maxRedirects: 5,
       });
 
