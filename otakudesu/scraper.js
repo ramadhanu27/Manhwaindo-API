@@ -47,6 +47,51 @@ const randomDelay = (min = 500, max = 1500) => {
 
 /**
  * Fetch HTML with proxy fallback
+ * @param {string} url - Target URL to fetch
+ * @returns {Promise<string>} HTML content
+ */
+async function fetchWithProxy(url) {
+  let lastError = null;
+
+  // Try Cloudflare Worker first (if configured)
+  if (CLOUDFLARE_WORKER) {
+    try {
+      const workerUrl = `${CLOUDFLARE_WORKER}?url=${encodeURIComponent(url)}`;
+      console.log(`[Otakudesu Fetch] Trying Cloudflare Worker: ${workerUrl.substring(0, 100)}...`);
+
+      const { data } = await axios.get(workerUrl, {
+        timeout: 30000,
+        maxRedirects: 5,
+      });
+
+      console.log(`[Otakudesu Fetch] Success with Cloudflare Worker`);
+      return data;
+    } catch (error) {
+      lastError = error;
+      console.error(`[Otakudesu Fetch] Cloudflare Worker failed: ${error.message}`);
+      // Continue to fallback proxies
+    }
+  }
+
+  // Try each proxy option as fallback
+  for (const proxy of PROXY_OPTIONS) {
+    try {
+      const fetchUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
+
+      console.log(`[Otakudesu Fetch] Trying ${proxy ? "proxy" : "direct"}: ${fetchUrl.substring(0, 100)}...`);
+
+      const { data } = await axios.get(fetchUrl, {
+        headers: getBrowserHeaders(),
+        timeout: 30000,
+        maxRedirects: 5,
+      });
+
+      console.log(`[Otakudesu Fetch] Success with ${proxy ? "proxy" : "direct"}`);
+      return data;
+    } catch (error) {
+      lastError = error;
+      console.error(`[Otakudesu Fetch] Failed with ${proxy ? "proxy" : "direct"}: ${error.message}`);
+      continue;
     }
   }
 
