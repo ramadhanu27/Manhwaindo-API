@@ -1,4 +1,4 @@
-const axios = require("axios");
+const cloudscraper = require("cloudscraper");
 const cheerio = require("cheerio");
 
 const BASE_URL = "https://otakudesu.best";
@@ -59,9 +59,8 @@ async function fetchWithProxy(url) {
       const workerUrl = `${CLOUDFLARE_WORKER}?url=${encodeURIComponent(url)}`;
       console.log(`[Otakudesu Fetch] Trying Cloudflare Worker: ${workerUrl.substring(0, 100)}...`);
 
-      const { data } = await axios.get(workerUrl, {
+      const data = await cloudscraper.get(workerUrl, {
         timeout: 30000,
-        maxRedirects: 5,
       });
 
       console.log(`[Otakudesu Fetch] Success with Cloudflare Worker`);
@@ -73,29 +72,46 @@ async function fetchWithProxy(url) {
     }
   }
 
+  // Try direct request with cloudscraper (bypass Cloudflare Anti-Bot)
+  try {
+    console.log(`[Otakudesu Fetch] Trying direct with cloudscraper: ${url.substring(0, 100)}...`);
+
+    const data = await cloudscraper.get(url, {
+      headers: getBrowserHeaders(),
+      timeout: 30000,
+    });
+
+    console.log(`[Otakudesu Fetch] Success with cloudscraper direct`);
+    return data;
+  } catch (error) {
+    lastError = error;
+    console.error(`[Otakudesu Fetch] Cloudscraper direct failed: ${error.message}`);
+  }
+
   // Try each proxy option as fallback
   for (const proxy of PROXY_OPTIONS) {
+    if (!proxy) continue; // Skip null (already tried direct)
+
     try {
-      const fetchUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
+      const fetchUrl = `${proxy}${encodeURIComponent(url)}`;
 
-      console.log(`[Otakudesu Fetch] Trying ${proxy ? "proxy" : "direct"}: ${fetchUrl.substring(0, 100)}...`);
+      console.log(`[Otakudesu Fetch] Trying proxy: ${fetchUrl.substring(0, 100)}...`);
 
-      const { data } = await axios.get(fetchUrl, {
+      const data = await cloudscraper.get(fetchUrl, {
         headers: getBrowserHeaders(),
         timeout: 30000,
-        maxRedirects: 5,
       });
 
-      console.log(`[Otakudesu Fetch] Success with ${proxy ? "proxy" : "direct"}`);
+      console.log(`[Otakudesu Fetch] Success with proxy`);
       return data;
     } catch (error) {
       lastError = error;
-      console.error(`[Otakudesu Fetch] Failed with ${proxy ? "proxy" : "direct"}: ${error.message}`);
+      console.error(`[Otakudesu Fetch] Proxy failed: ${error.message}`);
       continue;
     }
   }
 
-  // All proxies failed
+  // All attempts failed
   throw lastError || new Error("All proxy attempts failed");
 }
 
