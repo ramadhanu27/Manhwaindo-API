@@ -5,6 +5,7 @@ const NodeCache = require("node-cache");
 const path = require("path");
 const apiRoutes = require("./routes/api");
 const animeRoutes = require("./anime/api");
+const otakudesuRoutes = require("./otakudesu/api");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -53,8 +54,9 @@ const cacheMiddleware = (duration) => (req, res, next) => {
 };
 
 // Routes with Cache
-// Anime API: 30 minutes cache (data rarely changes, Puppeteer is slow)
+// Anime APIs: 30 minutes cache (data rarely changes, may use proxy)
 app.use("/api/anime", cacheMiddleware(1800), animeRoutes);
+app.use("/api/otakudesu", cacheMiddleware(1800), otakudesuRoutes);
 // Manhwa API: 10 minutes cache
 app.use("/api", cacheMiddleware(600), apiRoutes);
 
