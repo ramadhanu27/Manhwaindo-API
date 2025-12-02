@@ -286,6 +286,36 @@ async function scrapeDetail(slug) {
       }
     }
 
+    // Get additional metadata from .split sections
+    let released = "";
+    let duration = "";
+    let season = "";
+    const cast = [];
+
+    $(".split").each((i, el) => {
+      const $el = $(el);
+      const label = $el.find("b").text().trim();
+      const value = $el.clone().children().remove().end().text().trim();
+
+      if (label.startsWith("Released:")) {
+        released = value;
+      } else if (label.startsWith("Duration:")) {
+        duration = value;
+      } else if (label.startsWith("Season:")) {
+        season = $el.find("a").text().trim() || value;
+      } else if (label.startsWith("Type:") && !type) {
+        type = value; // Use this if .spe doesn't have it
+      } else if (label.startsWith("Cast:")) {
+        $el.find("a").each((j, link) => {
+          const name = $(link).text().trim();
+          const url = $(link).attr("href") || "";
+          if (name) {
+            cast.push({ name, url });
+          }
+        });
+      }
+    });
+
     // Get streaming links
     const streamingLinks = [];
     $("iframe").each((i, el) => {
@@ -393,7 +423,11 @@ async function scrapeDetail(slug) {
         episode: episodeNumber,
         type,
         status,
+        released,
+        duration,
+        season,
         genres,
+        cast,
         info: animeInfo,
         streamingLinks,
         downloadLinks,
