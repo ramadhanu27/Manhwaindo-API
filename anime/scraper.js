@@ -262,50 +262,46 @@ async function scrapeDetail(slug) {
     const episodeMatch = title.match(/Episode (\d+)/i);
     const episodeNumber = episodeMatch ? episodeMatch[1] : "";
 
-    // Get type and status from .spe
-    // Structure: <span>Label: </span><span>Value</span>
+    // Get metadata from .spe spans
+    // Structure: <span>Label: Value</span> (all in one span)
     let type = "";
     let status = "";
-
-    const speSpans = $(".spe span");
-    for (let i = 0; i < speSpans.length; i++) {
-      const currentText = $(speSpans[i]).text().trim();
-
-      // If this is a label (contains colon), get the next span's value
-      if (currentText.includes(":")) {
-        const nextSpan = speSpans[i + 1];
-        if (nextSpan) {
-          const value = $(nextSpan).text().trim();
-
-          if (currentText.startsWith("Type:")) {
-            type = value;
-          } else if (currentText.startsWith("Status:")) {
-            status = value;
-          }
-        }
-      }
-    }
-
-    // Get additional metadata from .split sections
     let released = "";
     let duration = "";
     let season = "";
+    let studio = "";
+
+    $(".spe span").each((i, el) => {
+      const text = $(el).text().trim();
+
+      if (text.includes(":")) {
+        const [label, ...valueParts] = text.split(":");
+        const value = valueParts.join(":").trim();
+
+        if (label === "Type") {
+          type = value;
+        } else if (label === "Status") {
+          status = value;
+        } else if (label === "Released") {
+          released = value;
+        } else if (label === "Duration") {
+          duration = value;
+        } else if (label === "Season") {
+          season = value;
+        } else if (label === "Studio") {
+          studio = value;
+        }
+      }
+    });
+
+    // Get cast from .split sections
     const cast = [];
 
     $(".split").each((i, el) => {
       const $el = $(el);
       const label = $el.find("b").text().trim();
-      const value = $el.clone().children().remove().end().text().trim();
 
-      if (label.startsWith("Released:")) {
-        released = value;
-      } else if (label.startsWith("Duration:")) {
-        duration = value;
-      } else if (label.startsWith("Season:")) {
-        season = $el.find("a").text().trim() || value;
-      } else if (label.startsWith("Type:") && !type) {
-        type = value; // Use this if .spe doesn't have it
-      } else if (label.startsWith("Cast:")) {
+      if (label.startsWith("Casts:")) {
         $el.find("a").each((j, link) => {
           const name = $(link).text().trim();
           const url = $(link).attr("href") || "";
@@ -426,6 +422,7 @@ async function scrapeDetail(slug) {
         released,
         duration,
         season,
+        studio,
         genres,
         cast,
         info: animeInfo,
