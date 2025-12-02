@@ -250,8 +250,8 @@ async function scrapeDetail(slug) {
       if (genre) genres.push(genre);
     });
 
-    // Get synopsis/description from .desc.mindes.alldes
-    let synopsis = $(".desc.mindes.alldes").text().trim();
+    // Get synopsis/description from .desc.mindes
+    let synopsis = $(".desc.mindes").text().trim();
 
     // Clean up synopsis - remove [Written by MAL Rewrite] and extra whitespace
     if (synopsis) {
