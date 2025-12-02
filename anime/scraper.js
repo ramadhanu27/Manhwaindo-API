@@ -250,15 +250,41 @@ async function scrapeDetail(slug) {
       if (genre) genres.push(genre);
     });
 
-    // Get synopsis/description
-    const synopsis = $(".desc .entry-content").text().trim() || $(".entry-content p").first().text().trim();
+    // Get synopsis/description from .desc.mindes.sliders
+    let synopsis = $(".desc.mindes.sliders").text().trim();
+
+    // Fallback to other selectors if not found
+    if (!synopsis) {
+      synopsis = $(".desc .entry-content").text().trim() || $(".entry-content p").first().text().trim();
+    }
 
     // Extract episode number from title
     const episodeMatch = title.match(/Episode (\d+)/i);
     const episodeNumber = episodeMatch ? episodeMatch[1] : "";
 
-    // Get type
-    const type = $(".typez").text().trim();
+    // Get type and status from .spe
+    // Structure: <span>Label: </span><span>Value</span>
+    let type = "";
+    let status = "";
+
+    const speSpans = $(".spe span");
+    for (let i = 0; i < speSpans.length; i++) {
+      const currentText = $(speSpans[i]).text().trim();
+
+      // If this is a label (contains colon), get the next span's value
+      if (currentText.includes(":")) {
+        const nextSpan = speSpans[i + 1];
+        if (nextSpan) {
+          const value = $(nextSpan).text().trim();
+
+          if (currentText.startsWith("Type:")) {
+            type = value;
+          } else if (currentText.startsWith("Status:")) {
+            status = value;
+          }
+        }
+      }
+    }
 
     // Get streaming links
     const streamingLinks = [];
@@ -366,7 +392,7 @@ async function scrapeDetail(slug) {
         synopsis,
         episode: episodeNumber,
         type,
-        status: animeInfo.status || "",
+        status,
         genres,
         info: animeInfo,
         streamingLinks,
