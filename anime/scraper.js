@@ -250,12 +250,19 @@ async function scrapeDetail(slug) {
       if (genre) genres.push(genre);
     });
 
-    // Get synopsis/description from .desc.mindes.sliders
-    let synopsis = $(".desc.mindes.sliders").text().trim();
+    // Get synopsis/description from .desc.mindes.alldes
+    let synopsis = $(".desc.mindes.alldes").text().trim();
+
+    // Clean up synopsis - remove [Written by MAL Rewrite] and extra whitespace
+    if (synopsis) {
+      synopsis = synopsis.replace(/\[Written by MAL Rewrite\]/gi, "").trim();
+      // Remove extra whitespace/newlines
+      synopsis = synopsis.replace(/\s+/g, " ").trim();
+    }
 
     // Fallback to other selectors if not found
     if (!synopsis) {
-      synopsis = $(".desc .entry-content").text().trim() || $(".entry-content p").first().text().trim();
+      synopsis = $(".entry-content p").first().text().trim();
     }
 
     // Extract episode number from title
