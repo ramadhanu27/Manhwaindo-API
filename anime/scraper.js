@@ -565,6 +565,77 @@ async function scrapeGenres() {
   }
 }
 
+/**
+ * Scrape popular anime
+ * @param {string} period - 'weekly', 'monthly', or 'all' (default: 'all')
+ */
+async function scrapePopular(period = "all") {
+  try {
+    // Popular anime is on the homepage (right sidebar)
+    const url = BASE_URL;
+    const data = await fetchWithProxy(url);
+    const $ = cheerio.load(data);
+    const popularList = [];
+
+    // Determine which tab to scrape based on period
+    let selector = "";
+    if (period === "weekly") {
+      selector = ".wpop-weekly li";
+    } else if (period === "monthly") {
+      selector = ".wpop-monthly li";
+    } else {
+      // 'all' or default
+      selector = ".wpop-alltime li";
+    }
+
+    // Scrape popular anime items
+    $(selector).each((i, el) => {
+      const $el = $(el);
+      const $link = $el.find("a.series").first();
+
+      // Title is in the link text
+      const title = $link.text().trim();
+      const slug = $link.attr("href") || "";
+      const thumb = $el.find("img").attr("src") || "";
+
+      // Get genres
+      const genres = [];
+      $el.find("span a[rel='tag']").each((j, genreEl) => {
+        const genre = $(genreEl).text().trim();
+        if (genre) genres.push(genre);
+      });
+
+      // Get rating from .numscore
+      const rating = $el.find(".numscore").text().trim();
+
+      if (title && slug) {
+        popularList.push({
+          rank: i + 1,
+          title,
+          slug: slug.replace(BASE_URL, ""),
+          thumb,
+          genres,
+          rating,
+          url: slug,
+        });
+      }
+    });
+
+    return {
+      success: true,
+      period,
+      totalAnime: popularList.length,
+      data: popularList,
+    };
+  } catch (error) {
+    console.error("Error scraping popular:", error.message);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
 module.exports = {
   scrapeOngoing,
   scrapeComplete,
@@ -574,4 +645,5 @@ module.exports = {
   scrapeSearch,
   scrapeSchedule,
   scrapeGenres,
+  scrapePopular,
 };

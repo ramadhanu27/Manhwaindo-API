@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const { scrapeOngoing, scrapeComplete, scrapeBrowse, scrapeDetail, scrapeEpisode, scrapeSearch, scrapeSchedule, scrapeGenres } = require("./scraper");
+const { scrapeOngoing, scrapeComplete, scrapeBrowse, scrapeDetail, scrapeEpisode, scrapeSearch, scrapeSchedule, scrapeGenres, scrapePopular } = require("./scraper");
 
 /**
  * GET /api/anime
@@ -19,6 +19,13 @@ router.get("/", (req, res) => {
         path: "/api/anime/ongoing?page=1",
         description: "Get latest anime episodes",
         example: "/api/anime/ongoing?page=1",
+        available: true,
+      },
+      popular: {
+        path: "/api/anime/popular?period=all",
+        description: "Get popular anime (weekly, monthly, or all time)",
+        example: "/api/anime/popular?period=weekly",
+        params: "period: weekly | monthly | all (default: all)",
         available: true,
       },
       search: {
@@ -216,6 +223,34 @@ router.get("/schedule", async (req, res) => {
 router.get("/genres", async (req, res) => {
   try {
     const result = await scrapeGenres();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/anime/popular
+ * Get popular anime
+ * Query params: period (weekly, monthly, all)
+ * Example: /api/anime/popular?period=weekly
+ */
+router.get("/popular", async (req, res) => {
+  try {
+    const period = req.query.period || "all";
+
+    // Validate period
+    if (!["weekly", "monthly", "all"].includes(period)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid period. Use: weekly, monthly, or all",
+      });
+    }
+
+    const result = await scrapePopular(period);
     res.json(result);
   } catch (error) {
     res.status(500).json({
