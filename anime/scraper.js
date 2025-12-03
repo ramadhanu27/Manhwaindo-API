@@ -591,11 +591,10 @@ async function scrapePopular(period = "all") {
     // Scrape popular anime items
     $(selector).each((i, el) => {
       const $el = $(el);
-      const $link = $el.find("a.series").first();
 
-      // Title is in the link text
-      const title = $link.text().trim();
-      const slug = $link.attr("href") || "";
+      // Title is in h4 > a.series
+      const title = $el.find("h4 a.series").text().trim() || $el.find("h4").text().trim();
+      const slug = $el.find("a.series").first().attr("href") || "";
       const thumb = $el.find("img").attr("src") || "";
 
       // Get genres
