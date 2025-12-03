@@ -653,9 +653,8 @@ async function scrapeAnimeDetail(slug) {
     // Get alternative title
     const alternativeTitle = $(".alter").text().trim();
 
-    // Get rating
-    const ratingText = $(".rating .numscore").text().trim();
-    const rating = ratingText || "";
+    // Get rating (only first one to avoid duplicates)
+    const rating = $(".rating .numscore").first().text().trim();
 
     // Get synopsis
     let synopsis = $(".desc.mindes").text().trim();
@@ -671,6 +670,7 @@ async function scrapeAnimeDetail(slug) {
     let duration = "";
     let season = "";
     let studio = "";
+    let totalEpisodesCount = "";
 
     $(".spe span").each((i, el) => {
       const text = $(el).text().trim();
@@ -691,6 +691,8 @@ async function scrapeAnimeDetail(slug) {
           season = value;
         } else if (label === "Studio") {
           studio = value;
+        } else if (label === "Episodes") {
+          totalEpisodesCount = value;
         }
       }
     });
@@ -702,8 +704,13 @@ async function scrapeAnimeDetail(slug) {
       if (genre) genres.push(genre);
     });
 
-    // Get cast from .split
+    // Get additional metadata and cast from .split
     const cast = [];
+    let director = "";
+    let producers = "";
+    let releasedOn = "";
+    let updatedOn = "";
+
     $(".split").each((i, el) => {
       const $el = $(el);
       const label = $el.find("b").text().trim();
@@ -716,6 +723,14 @@ async function scrapeAnimeDetail(slug) {
             cast.push({ name, url });
           }
         });
+      } else if (label.startsWith("Director:")) {
+        director = $el.text().replace(label, "").trim();
+      } else if (label.startsWith("Producers:")) {
+        producers = $el.text().replace(label, "").trim();
+      } else if (label.startsWith("Released on:")) {
+        releasedOn = $el.text().replace(label, "").trim();
+      } else if (label.startsWith("Updated on:")) {
+        updatedOn = $el.text().replace(label, "").trim();
       }
     });
 
@@ -755,6 +770,11 @@ async function scrapeAnimeDetail(slug) {
         duration,
         season,
         studio,
+        totalEpisodesCount,
+        director,
+        producers,
+        releasedOn,
+        updatedOn,
         genres,
         cast,
         totalEpisodes: episodes.length,
