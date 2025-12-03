@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const { scrapeOngoing, scrapeComplete, scrapeBrowse, scrapeDetail, scrapeEpisode, scrapeSearch, scrapeSchedule, scrapeGenres, scrapePopular } = require("./scraper");
+const { scrapeOngoing, scrapeComplete, scrapeBrowse, scrapeDetail, scrapeEpisode, scrapeSearch, scrapeSchedule, scrapeGenres, scrapePopular, scrapeAnimeDetail } = require("./scraper");
 
 /**
  * GET /api/anime
@@ -26,6 +26,13 @@ router.get("/", (req, res) => {
         description: "Get popular anime (weekly, monthly, or all time)",
         example: "/api/anime/popular?period=weekly",
         params: "period: weekly | monthly | all (default: all)",
+        available: true,
+      },
+      series: {
+        path: "/api/anime/series/:slug",
+        description: "Get anime series detail with synopsis, metadata, and episode list",
+        example: "/api/anime/series/anime/fujimoto-tatsuki-17-26/",
+        note: "Returns series info, synopsis, genres, cast, and all episodes",
         available: true,
       },
       search: {
@@ -251,6 +258,24 @@ router.get("/popular", async (req, res) => {
     }
 
     const result = await scrapePopular(period);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/anime/series/*
+ * Get anime series detail with episode list
+ * Example: /api/anime/series/anime/fujimoto-tatsuki-17-26/
+ */
+router.get("/series/*", async (req, res) => {
+  try {
+    const slug = "/" + req.params[0];
+    const result = await scrapeAnimeDetail(slug);
     res.json(result);
   } catch (error) {
     res.status(500).json({

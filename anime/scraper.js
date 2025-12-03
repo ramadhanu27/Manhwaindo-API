@@ -636,6 +636,140 @@ async function scrapePopular(period = "all") {
   }
 }
 
+/**
+ * Scrape anime series detail
+ * @param {string} slug - Anime slug (e.g., "/anime/fujimoto-tatsuki-17-26/")
+ */
+async function scrapeAnimeDetail(slug) {
+  try {
+    const url = `${BASE_URL}${slug}`;
+    const data = await fetchWithProxy(url);
+    const $ = cheerio.load(data);
+
+    // Get basic info
+    const title = $("h1.entry-title").text().trim();
+    const thumb = $(".thumb img").attr("src") || $(".infox img").first().attr("src") || "";
+
+    // Get alternative title
+    const alternativeTitle = $(".alter").text().trim();
+
+    // Get rating
+    const ratingText = $(".rating .numscore").text().trim();
+    const rating = ratingText || "";
+
+    // Get synopsis
+    let synopsis = $(".desc.mindes").text().trim();
+    if (synopsis) {
+      synopsis = synopsis.replace(/\[Written by MAL Rewrite\]/gi, "").trim();
+      synopsis = synopsis.replace(/\s+/g, " ").trim();
+    }
+
+    // Get metadata from .spe spans
+    let type = "";
+    let status = "";
+    let released = "";
+    let duration = "";
+    let season = "";
+    let studio = "";
+
+    $(".spe span").each((i, el) => {
+      const text = $(el).text().trim();
+
+      if (text.includes(":")) {
+        const [label, ...valueParts] = text.split(":");
+        const value = valueParts.join(":").trim();
+
+        if (label === "Type") {
+          type = value;
+        } else if (label === "Status") {
+          status = value;
+        } else if (label === "Released") {
+          released = value;
+        } else if (label === "Duration") {
+          duration = value;
+        } else if (label === "Season") {
+          season = value;
+        } else if (label === "Studio") {
+          studio = value;
+        }
+      }
+    });
+
+    // Get genres
+    const genres = [];
+    $(".genxed a").each((i, el) => {
+      const genre = $(el).text().trim();
+      if (genre) genres.push(genre);
+    });
+
+    // Get cast from .split
+    const cast = [];
+    $(".split").each((i, el) => {
+      const $el = $(el);
+      const label = $el.find("b").text().trim();
+
+      if (label.startsWith("Casts:")) {
+        $el.find("a").each((j, link) => {
+          const name = $(link).text().trim();
+          const url = $(link).attr("href") || "";
+          if (name) {
+            cast.push({ name, url });
+          }
+        });
+      }
+    });
+
+    // Get episode list
+    const episodes = [];
+    $(".eplister ul li").each((i, el) => {
+      const $el = $(el);
+      const $link = $el.find("a");
+
+      const episodeUrl = $link.attr("href") || "";
+      const episodeTitle = $el.find(".epl-title").text().trim();
+      const episodeNum = $el.find(".epl-num").text().trim();
+      const episodeDate = $el.find(".epl-date").text().trim();
+
+      if (episodeUrl && episodeTitle) {
+        episodes.push({
+          episode: episodeNum,
+          title: episodeTitle,
+          slug: episodeUrl.replace(BASE_URL, ""),
+          date: episodeDate,
+          url: episodeUrl,
+        });
+      }
+    });
+
+    return {
+      success: true,
+      data: {
+        title,
+        alternativeTitle,
+        thumb,
+        rating,
+        synopsis,
+        type,
+        status,
+        released,
+        duration,
+        season,
+        studio,
+        genres,
+        cast,
+        totalEpisodes: episodes.length,
+        episodes,
+      },
+    };
+  } catch (error) {
+    console.error("Error scraping anime detail:", error.message);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+}
+
 module.exports = {
   scrapeOngoing,
   scrapeComplete,
@@ -646,4 +780,5 @@ module.exports = {
   scrapeSchedule,
   scrapeGenres,
   scrapePopular,
+  scrapeAnimeDetail,
 };
