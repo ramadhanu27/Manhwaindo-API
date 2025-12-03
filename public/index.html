@@ -929,6 +929,114 @@
 }</code></pre>
                         </div>
                     </div>
+
+                    <!-- Anime Endpoint 6: Popular Anime -->
+                    <div
+                        class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                                <a href="/api/anime/popular?period=all" target="_blank"
+                                    class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                                    /api/anime/popular
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>
+                                </a>
+                            </div>
+
+                            <!-- Realtime Status Badge -->
+                            <div id="status-anime-popular"
+                                class="flex items-center gap-2 text-xs font-mono bg-slate-800/50 border border-slate-700/50 px-3 py-1.5 rounded-full transition-all">
+                                <span class="relative flex h-2 w-2">
+                                    <span
+                                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+                                </span>
+                                <span class="text-slate-400">Checking...</span>
+                            </div>
+                        </div>
+
+                        <p class="mb-6 text-slate-400">Get popular anime by period: weekly, monthly, or all time.
+                            Returns top 10 anime with ratings and genres.</p>
+
+                        <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                            <button onclick="copyToClipboard(this)"
+                                class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                            <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/anime/popular?period=weekly"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="json-key">"response"</span>: {
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"period"</span>: <span class="json-string">"weekly"</span>,
+  <span class="json-key">"totalAnime"</span>: <span class="json-number">10</span>,
+  <span class="json-key">"data"</span>: [{
+    <span class="json-key">"rank"</span>: <span class="json-number">1</span>,
+    <span class="json-key">"title"</span>: <span class="json-string">"One Piece"</span>,
+    <span class="json-key">"rating"</span>: <span class="json-string">"8.73"</span>
+  }]
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Anime Endpoint 7: Anime Series Detail -->
+                    <div
+                        class="group relative rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="inline-flex w-fit items-center rounded-md border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-sm font-bold text-blue-400 font-mono">GET</span>
+                                <a href="/api/anime/series/anime/one-piece/" target="_blank"
+                                    class="text-lg font-mono text-slate-200 hover:text-purple-400 hover:underline decoration-purple-500/50 underline-offset-4 transition-all flex items-center gap-1">
+                                    /api/anime/series/:slug
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="w-4 h-4 text-slate-500 group-hover:text-purple-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>
+                                </a>
+                            </div>
+
+                            <!-- Realtime Status Badge -->
+                            <div id="status-anime-series"
+                                class="flex items-center gap-2 text-xs font-mono bg-slate-800/50 border border-slate-700/50 px-3 py-1.5 rounded-full transition-all">
+                                <span class="relative flex h-2 w-2">
+                                    <span
+                                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+                                </span>
+                                <span class="text-slate-400">Checking...</span>
+                            </div>
+                        </div>
+
+                        <p class="mb-6 text-slate-400">Get anime series detail with synopsis, metadata (director,
+                            producers, studio), cast, and complete episode list.</p>
+
+                        <div class="relative rounded-lg border border-slate-800 bg-slate-950 p-4 font-mono text-sm">
+                            <button onclick="copyToClipboard(this)"
+                                class="absolute right-2 top-2 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200">Copy</button>
+                            <pre class="overflow-x-auto"><code class="language-json"><span class="text-slate-500">// Request</span>
+<span class="json-key">"url"</span>: <span class="json-string">"/api/anime/series/anime/one-piece/"</span>
+
+<span class="text-slate-500">// Response</span>
+<span class="json-key">"response"</span>: {
+  <span class="json-key">"success"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"synopsis"</span>: <span class="json-string">"..."</span>,
+    <span class="json-key">"director"</span>: <span class="json-string">"..."</span>,
+    <span class="json-key">"studio"</span>: <span class="json-string">"Toei Animation"</span>,
+    <span class="json-key">"totalEpisodes"</span>: <span class="json-number">1151</span>,
+    <span class="json-key">"episodes"</span>: [...]
+  }
+}</code></pre>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1299,6 +1407,8 @@
             checkEndpointStatus("/api/anime/search?q=naruto", "status-anime-search");
             checkEndpointStatus("/api/anime/schedule", "status-anime-schedule");
             checkEndpointStatus("/api/anime/genres", "status-anime-genres");
+            checkEndpointStatus("/api/anime/popular?period=all", "status-anime-popular");
+            checkEndpointStatus("/api/anime/series/anime/one-piece/", "status-anime-series");
         });
     </script>
 </body>
