@@ -657,7 +657,14 @@ async function scrapeAnimeDetail(slug) {
     const rating = $(".rating .numscore").first().text().trim();
 
     // Get synopsis
-    let synopsis = $(".desc.mindes").text().trim();
+    // Get synopsis from .entry-content[itemprop="description"]
+    let synopsis = $(".entry-content[itemprop='description']").text().trim();
+
+    // Fallback to .desc.mindes if not found
+    if (!synopsis) {
+      synopsis = $(".desc.mindes").text().trim();
+    }
+
     if (synopsis) {
       synopsis = synopsis.replace(/\[Written by MAL Rewrite\]/gi, "").trim();
       synopsis = synopsis.replace(/\s+/g, " ").trim();
