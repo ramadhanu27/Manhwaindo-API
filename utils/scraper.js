@@ -382,7 +382,18 @@ async function scrapeChapter(slug) {
     const images = [];
 
     $("#readerarea img").each((i, elem) => {
-      let imgSrc = $(elem).attr("src") || "";
+      // Check lazy loading attributes first, then fallback to src
+      let imgSrc = $(elem).attr("data-src") || $(elem).attr("data-lazy-src") || $(elem).attr("data-lazy") || $(elem).attr("data-original") || $(elem).attr("data-cfsrc") || "";
+
+      // Fallback to src only if it's not a placeholder/SVG
+      if (!imgSrc) {
+        const srcVal = $(elem).attr("src") || "";
+        // Skip if src is a data:image/svg placeholder
+        if (srcVal && !srcVal.startsWith("data:image/svg")) {
+          imgSrc = srcVal;
+        }
+      }
+
       if (imgSrc) {
         // Fix URL format - replace triple slash with double slash
         imgSrc = imgSrc.replace(/^https:\/\/\//, "https://");
