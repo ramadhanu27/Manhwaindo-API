@@ -1,7 +1,8 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-const BASE_URL = process.env.BASE_URL || "https://www.manhwaindo.my";
+// Remove trailing slash from BASE_URL to prevent double slashes
+const BASE_URL = (process.env.BASE_URL || "https://www.manhwaindo.my").replace(/\/+$/, "");
 
 /**
  * Extract clean slug from URL
