@@ -1,10 +1,57 @@
-const cloudscraper = require("cloudscraper");
+const axios = require("axios");
 const cheerio = require("cheerio");
+const dns = require("dns");
+const http = require("http");
+const https = require("https");
 
 const BASE_URL = "https://otakudesu.best";
 
 // Cloudflare Worker proxy (primary option for Vercel deployment)
 const CLOUDFLARE_WORKER = process.env.CLOUDFLARE_WORKER_URL || null;
+
+// Custom DNS resolver using Cloudflare and Google DNS
+const resolver = new dns.Resolver();
+resolver.setServers([
+  "1.1.1.1", // Cloudflare DNS
+  "1.0.0.1", // Cloudflare DNS secondary
+  "8.8.8.8", // Google DNS
+  "8.8.4.4", // Google DNS secondary
+]);
+
+// Custom lookup function for DNS resolution
+const customLookup = (hostname, options, callback) => {
+  resolver.resolve4(hostname, (err, addresses) => {
+    if (err) {
+      // Fallback to default DNS if custom DNS fails
+      dns.lookup(hostname, options, callback);
+    } else {
+      // Return the first resolved address
+      callback(null, addresses[0], 4);
+    }
+  });
+};
+
+// Create custom HTTP/HTTPS agents with custom DNS
+const httpAgent = new http.Agent({
+  lookup: customLookup,
+  keepAlive: true,
+  timeout: 30000,
+});
+
+const httpsAgent = new https.Agent({
+  lookup: customLookup,
+  keepAlive: true,
+  timeout: 30000,
+  rejectUnauthorized: false, // For some sites with SSL issues
+});
+
+// Create axios instance with custom DNS agents
+const axiosInstance = axios.create({
+  httpAgent,
+  httpsAgent,
+  timeout: 30000,
+  maxRedirects: 5,
+});
 
 // Proxy options (fallback if direct request fails)
 const PROXY_OPTIONS = [
@@ -47,6 +94,7 @@ const randomDelay = (min = 500, max = 1500) => {
 
 /**
  * Fetch HTML with proxy fallback
+ * Uses axios with custom DNS resolver (Cloudflare & Google DNS)
  * @param {string} url - Target URL to fetch
  * @returns {Promise<string>} HTML content
  */
@@ -59,12 +107,12 @@ async function fetchWithProxy(url) {
       const workerUrl = `${CLOUDFLARE_WORKER}?url=${encodeURIComponent(url)}`;
       console.log(`[Otakudesu Fetch] Trying Cloudflare Worker: ${workerUrl.substring(0, 100)}...`);
 
-      const data = await cloudscraper.get(workerUrl, {
-        timeout: 30000,
+      const response = await axiosInstance.get(workerUrl, {
+        headers: getBrowserHeaders(),
       });
 
       console.log(`[Otakudesu Fetch] Success with Cloudflare Worker`);
-      return data;
+      return response.data;
     } catch (error) {
       lastError = error;
       console.error(`[Otakudesu Fetch] Cloudflare Worker failed: ${error.message}`);
@@ -72,20 +120,19 @@ async function fetchWithProxy(url) {
     }
   }
 
-  // Try direct request with cloudscraper (bypass Cloudflare Anti-Bot)
+  // Try direct request with axios + custom DNS
   try {
-    console.log(`[Otakudesu Fetch] Trying direct with cloudscraper: ${url.substring(0, 100)}...`);
+    console.log(`[Otakudesu Fetch] Trying direct with axios + custom DNS: ${url.substring(0, 100)}...`);
 
-    const data = await cloudscraper.get(url, {
+    const response = await axiosInstance.get(url, {
       headers: getBrowserHeaders(),
-      timeout: 30000,
     });
 
-    console.log(`[Otakudesu Fetch] Success with cloudscraper direct`);
-    return data;
+    console.log(`[Otakudesu Fetch] Success with axios direct (custom DNS)`);
+    return response.data;
   } catch (error) {
     lastError = error;
-    console.error(`[Otakudesu Fetch] Cloudscraper direct failed: ${error.message}`);
+    console.error(`[Otakudesu Fetch] Axios direct failed: ${error.message}`);
   }
 
   // Try each proxy option as fallback
@@ -97,13 +144,12 @@ async function fetchWithProxy(url) {
 
       console.log(`[Otakudesu Fetch] Trying proxy: ${fetchUrl.substring(0, 100)}...`);
 
-      const data = await cloudscraper.get(fetchUrl, {
+      const response = await axiosInstance.get(fetchUrl, {
         headers: getBrowserHeaders(),
-        timeout: 30000,
       });
 
       console.log(`[Otakudesu Fetch] Success with proxy`);
-      return data;
+      return response.data;
     } catch (error) {
       lastError = error;
       console.error(`[Otakudesu Fetch] Proxy failed: ${error.message}`);
