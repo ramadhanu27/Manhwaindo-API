@@ -1,5 +1,6 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
+const { fetchWithPuppeteer } = require("./puppeteer-helper");
 
 // Remove trailing slash from BASE_URL to prevent double slashes
 const BASE_URL = (process.env.BASE_URL || "https://www.manhwaindo.my").replace(/\/+$/, "");
@@ -41,17 +42,44 @@ function extractSlug(url) {
 }
 
 /**
- * Fetch HTML content from URL
+ * Fetch HTML content from URL with fallback to Puppeteer for 403 errors
+ * @param {string} url - Target URL
+ * @param {object} options - Optional settings for Puppeteer
+ * @returns {Promise<CheerioAPI>} Cheerio instance
  */
-async function fetchHTML(url) {
+async function fetchHTML(url, options = {}) {
   try {
+    console.log(`[Fetch] Trying axios for: ${url}`);
     const { data } = await axios.get(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        Connection: "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Cache-Control": "max-age=0",
       },
+      timeout: 15000,
     });
+    console.log(`[Fetch] Axios success for: ${url}`);
     return cheerio.load(data);
   } catch (error) {
+    // If we get a 403 error, try with Puppeteer
+    if (error.response && error.response.status === 403) {
+      console.log(`[Fetch] Got 403 error, trying Puppeteer for: ${url}`);
+      try {
+        const html = await fetchWithPuppeteer(url, options);
+        return cheerio.load(html);
+      } catch (puppeteerError) {
+        throw new Error(`Failed to fetch ${url} with Puppeteer: ${puppeteerError.message}`);
+      }
+    }
+
+    // For other errors, throw the original error
     throw new Error(`Failed to fetch ${url}: ${error.message}`);
   }
 }
