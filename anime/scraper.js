@@ -3,12 +3,8 @@ const cheerio = require("cheerio");
 
 const BASE_URL = "https://anoboy.gg";
 
-// Proxy options (fallback if direct request fails)
-const PROXY_OPTIONS = [
-  null, // Try direct first
-  "https://api.allorigins.win/raw?url=", // AllOrigins (free, reliable)
-  "https://corsproxy.io/?", // CORS Proxy (free)
-];
+// OPTIMIZED: Removed proxy fallback to reduce CPU usage
+// Proxy options disabled - use direct only
 
 // Helper function to get realistic browser headers
 const getBrowserHeaders = (referer = BASE_URL) => ({
@@ -19,52 +15,31 @@ const getBrowserHeaders = (referer = BASE_URL) => ({
   Connection: "keep-alive",
   "Upgrade-Insecure-Requests": "1",
   Referer: referer,
-  "Sec-Fetch-Dest": "document",
-  "Sec-Fetch-Mode": "navigate",
-  "Sec-Fetch-Site": "same-origin",
-  "Sec-Fetch-User": "?1",
   "Cache-Control": "max-age=0",
 });
 
 /**
- * Fetch HTML with proxy fallback
+ * Fetch HTML - OPTIMIZED: Direct axios only, no proxy fallback
  * @param {string} url - Target URL to fetch
  * @returns {Promise<string>} HTML content
  */
 async function fetchWithProxy(url) {
-  let lastError = null;
+  try {
+    console.log(`[Anime Fetch] Fetching: ${url.substring(0, 80)}...`);
 
-  // Try each proxy option
-  for (const proxy of PROXY_OPTIONS) {
-    try {
-      const fetchUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
+    const { data } = await axios.get(url, {
+      headers: getBrowserHeaders(),
+      timeout: 15000,
+      maxRedirects: 5,
+    });
 
-      console.log(`[Fetch] Trying ${proxy ? "proxy" : "direct"}: ${fetchUrl.substring(0, 100)}...`);
-
-      const { data } = await axios.get(fetchUrl, {
-        headers: getBrowserHeaders(),
-        timeout: 20000,
-        maxRedirects: 5,
-      });
-
-      console.log(`[Fetch] Success with ${proxy ? "proxy" : "direct"}`);
-      return data;
-    } catch (error) {
-      lastError = error;
-      console.error(`[Fetch] Failed with ${proxy ? "proxy" : "direct"}: ${error.message}`);
-
-      // If it's not a 403/blocking error, don't try other proxies
-      if (error.response && error.response.status !== 403 && error.response.status !== 429) {
-        throw error;
-      }
-
-      // Continue to next proxy
-      continue;
-    }
+    console.log(`[Anime Fetch] Success`);
+    return data;
+  } catch (error) {
+    const statusCode = error.response?.status || "unknown";
+    console.error(`[Anime Fetch] Failed (${statusCode}): ${error.message}`);
+    throw new Error(`Failed to fetch: ${error.message}`);
   }
-
-  // All proxies failed
-  throw lastError || new Error("All proxy attempts failed");
 }
 
 /**

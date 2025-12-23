@@ -1,118 +1,42 @@
-const cloudscraper = require("cloudscraper");
+// OPTIMIZED: Replaced cloudscraper with axios for lower CPU usage
+const axios = require("axios");
 const cheerio = require("cheerio");
 
 const BASE_URL = "https://otakudesu.best";
 
-// Cloudflare Worker proxy (primary option for Vercel deployment)
-const CLOUDFLARE_WORKER = process.env.CLOUDFLARE_WORKER_URL || null;
-
-// Proxy options (fallback if direct request fails)
-const PROXY_OPTIONS = [
-  null, // Try direct first
-  "https://api.allorigins.win/raw?url=", // AllOrigins (free, reliable)
-  "https://corsproxy.io/?", // CORS Proxy (free)
-  "https://api.codetabs.com/v1/proxy?quest=", // CodeTabs proxy
-];
-
 // Helper function to get realistic browser headers
-const getBrowserHeaders = (referer = BASE_URL) => {
-  // Rotate user agents to avoid detection
-  const userAgents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  ];
-
-  return {
-    "User-Agent": userAgents[Math.floor(Math.random() * userAgents.length)],
-    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
-    "Accept-Encoding": "gzip, deflate, br",
-    Connection: "keep-alive",
-    "Upgrade-Insecure-Requests": "1",
-    Referer: referer,
-    "Sec-Fetch-Dest": "document",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "same-origin",
-    "Sec-Fetch-User": "?1",
-    "Cache-Control": "max-age=0",
-  };
-};
-
-// Helper function for random delay (anti-bot)
-const randomDelay = (min = 500, max = 1500) => {
-  return new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1)) + min));
-};
+const getBrowserHeaders = (referer = BASE_URL) => ({
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
+  "Accept-Encoding": "gzip, deflate, br",
+  Connection: "keep-alive",
+  "Upgrade-Insecure-Requests": "1",
+  Referer: referer,
+  "Cache-Control": "max-age=0",
+});
 
 /**
- * Fetch HTML with proxy fallback
+ * Fetch HTML - OPTIMIZED: Direct axios only, no proxy fallback, no cloudscraper
  * @param {string} url - Target URL to fetch
  * @returns {Promise<string>} HTML content
  */
 async function fetchWithProxy(url) {
-  let lastError = null;
-
-  // Try Cloudflare Worker first (if configured)
-  if (CLOUDFLARE_WORKER) {
-    try {
-      const workerUrl = `${CLOUDFLARE_WORKER}?url=${encodeURIComponent(url)}`;
-      console.log(`[Otakudesu Fetch] Trying Cloudflare Worker: ${workerUrl.substring(0, 100)}...`);
-
-      const data = await cloudscraper.get(workerUrl, {
-        timeout: 30000,
-      });
-
-      console.log(`[Otakudesu Fetch] Success with Cloudflare Worker`);
-      return data;
-    } catch (error) {
-      lastError = error;
-      console.error(`[Otakudesu Fetch] Cloudflare Worker failed: ${error.message}`);
-      // Continue to fallback proxies
-    }
-  }
-
-  // Try direct request with cloudscraper (bypass Cloudflare Anti-Bot)
   try {
-    console.log(`[Otakudesu Fetch] Trying direct with cloudscraper: ${url.substring(0, 100)}...`);
+    console.log(`[Otakudesu Fetch] Fetching: ${url.substring(0, 80)}...`);
 
-    const data = await cloudscraper.get(url, {
+    const { data } = await axios.get(url, {
       headers: getBrowserHeaders(),
-      timeout: 30000,
+      timeout: 15000,
     });
 
-    console.log(`[Otakudesu Fetch] Success with cloudscraper direct`);
+    console.log(`[Otakudesu Fetch] Success`);
     return data;
   } catch (error) {
-    lastError = error;
-    console.error(`[Otakudesu Fetch] Cloudscraper direct failed: ${error.message}`);
+    const statusCode = error.response?.status || "unknown";
+    console.error(`[Otakudesu Fetch] Failed (${statusCode}): ${error.message}`);
+    throw new Error(`Failed to fetch: ${error.message}`);
   }
-
-  // Try each proxy option as fallback
-  for (const proxy of PROXY_OPTIONS) {
-    if (!proxy) continue; // Skip null (already tried direct)
-
-    try {
-      const fetchUrl = `${proxy}${encodeURIComponent(url)}`;
-
-      console.log(`[Otakudesu Fetch] Trying proxy: ${fetchUrl.substring(0, 100)}...`);
-
-      const data = await cloudscraper.get(fetchUrl, {
-        headers: getBrowserHeaders(),
-        timeout: 30000,
-      });
-
-      console.log(`[Otakudesu Fetch] Success with proxy`);
-      return data;
-    } catch (error) {
-      lastError = error;
-      console.error(`[Otakudesu Fetch] Proxy failed: ${error.message}`);
-      continue;
-    }
-  }
-
-  // All attempts failed
-  throw lastError || new Error("All proxy attempts failed");
 }
 
 /**
@@ -220,239 +144,171 @@ async function scrapeComplete(page = 1) {
 /**
  * Scrape anime detail by slug
  */
+// OPTIMIZED: Removed retry logic (was 3x, now 1x)
 async function scrapeDetail(slug) {
-  // Retry up to 3 times with delays
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      const url = `${BASE_URL}${slug}`;
-      console.log(`[Otakudesu Detail] Attempt ${attempt}/3 - Fetching: ${url}`);
+  try {
+    const url = `${BASE_URL}${slug}`;
+    console.log(`[Otakudesu Detail] Fetching: ${url}`);
 
-      // Add random delay before fetch (anti-bot)
-      if (attempt > 1) {
-        await randomDelay(1000, 2000);
+    const data = await fetchWithProxy(url);
+    const $ = cheerio.load(data);
+
+    // Get basic info
+    const title = $(".jdlrx h1").text().trim();
+    const thumb = $(".fotoanime img").attr("src") || "";
+
+    // Get anime info
+    const animeInfo = {};
+    $(".infozingle p").each((i, el) => {
+      const $el = $(el);
+      const text = $el.text().trim();
+      const [key, ...valueParts] = text.split(":");
+      const value = valueParts.join(":").trim();
+
+      if (key && value) {
+        const cleanKey = key.toLowerCase().replace(/\s+/g, "_");
+        animeInfo[cleanKey] = value;
       }
+    });
 
-      const data = await fetchWithProxy(url);
-      const $ = cheerio.load(data);
+    // Get synopsis
+    const synopsis = $(".sinopc").text().trim();
 
-      // Get basic info
-      const title = $(".jdlrx h1").text().trim();
-      const thumb = $(".fotoanime img").attr("src") || "";
+    // Get genres
+    const genres = [];
+    $(".infozingle .genre-info a").each((i, el) => {
+      const genre = $(el).text().trim();
+      if (genre) genres.push(genre);
+    });
 
-      // Get anime info
-      const animeInfo = {};
-      $(".infozingle p").each((i, el) => {
-        const $el = $(el);
-        const text = $el.text().trim();
-        const [key, ...valueParts] = text.split(":");
-        const value = valueParts.join(":").trim();
+    // Get episode list
+    const episodeList = [];
+    $(".episodelist ul li").each((i, el) => {
+      const $el = $(el);
+      const $link = $el.find("a");
+      const episodeTitle = $link.text().trim();
+      const episodeUrl = $link.attr("href") || "";
+      const episodeDate = $el.find(".zeebr").text().trim();
 
-        if (key && value) {
-          const cleanKey = key.toLowerCase().replace(/\s+/g, "_");
-          animeInfo[cleanKey] = value;
-        }
-      });
-
-      // Get synopsis
-      const synopsis = $(".sinopc").text().trim();
-
-      // Get genres
-      const genres = [];
-      $(".infozingle .genre-info a").each((i, el) => {
-        const genre = $(el).text().trim();
-        if (genre) genres.push(genre);
-      });
-
-      // Get episode list
-      const episodeList = [];
-      $(".episodelist ul li").each((i, el) => {
-        const $el = $(el);
-        const $link = $el.find("a");
-        const episodeTitle = $link.text().trim();
-        const episodeUrl = $link.attr("href") || "";
-        const episodeDate = $el.find(".zeebr").text().trim();
-
-        if (episodeTitle && episodeUrl) {
-          episodeList.push({
-            title: episodeTitle,
-            slug: episodeUrl.replace(BASE_URL, ""),
-            url: episodeUrl,
-            date: episodeDate,
-          });
-        }
-      });
-
-      return {
-        success: true,
-        data: {
-          title,
-          thumb,
-          synopsis,
-          genres,
-          info: animeInfo,
-          episodeList,
-          totalEpisodes: episodeList.length,
-        },
-      };
-    } catch (error) {
-      console.error(`[Otakudesu Detail] Attempt ${attempt}/3 failed:`, error.message);
-
-      // If this was the last attempt, return error
-      if (attempt === 3) {
-        return {
-          success: false,
-          message: error.message,
-        };
+      if (episodeTitle && episodeUrl) {
+        episodeList.push({
+          title: episodeTitle,
+          slug: episodeUrl.replace(BASE_URL, ""),
+          url: episodeUrl,
+          date: episodeDate,
+        });
       }
+    });
 
-      // Otherwise, continue to next attempt
-      continue;
-    }
+    return {
+      success: true,
+      data: {
+        title,
+        thumb,
+        synopsis,
+        genres,
+        info: animeInfo,
+        episodeList,
+        totalEpisodes: episodeList.length,
+      },
+    };
+  } catch (error) {
+    console.error(`[Otakudesu Detail] Error:`, error.message);
+    return {
+      success: false,
+      message: error.message,
+    };
   }
-
-  // Fallback (should never reach here)
-  return {
-    success: false,
-    message: "All retry attempts failed",
-  };
 }
 
 /**
  * Scrape episode detail (streaming & download links)
+ * OPTIMIZED: Removed retry logic (was 3x, now 1x)
  */
 async function scrapeEpisode(slug) {
-  // Retry up to 3 times with delays
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      const url = `${BASE_URL}${slug}`;
-      console.log(`[Otakudesu Episode] Attempt ${attempt}/3 - Fetching: ${url}`);
+  try {
+    const url = `${BASE_URL}${slug}`;
+    console.log(`[Otakudesu Episode] Fetching: ${url}`);
 
-      // Add random delay before fetch (anti-bot)
-      if (attempt > 1) {
-        await randomDelay(1000, 2000);
-      }
+    const data = await fetchWithProxy(url);
+    const $ = cheerio.load(data);
 
-      const data = await fetchWithProxy(url);
-      const $ = cheerio.load(data);
+    const title = $(".posttl").text().trim();
 
-      const title = $(".posttl").text().trim();
-      console.log(`[Otakudesu Episode] Title: ${title}`);
-      console.log(`[Otakudesu Episode] HTML length: ${data.length}`);
-      console.log(`[Otakudesu Episode] .mirrorstream count: ${$(".mirrorstream ul li").length}`);
-      console.log(`[Otakudesu Episode] .download count: ${$(".download ul li").length}`);
+    // Get streaming links - they use data-content attribute with base64 encoded JSON
+    const streamingLinks = [];
+    $(".mirrorstream ul li").each((i, el) => {
+      const $el = $(el);
+      const $link = $el.find("a");
 
-      // Get streaming links - they use data-content attribute with base64 encoded JSON
-      const streamingLinks = [];
-      $(".mirrorstream ul li").each((i, el) => {
-        const $el = $(el);
-        const $link = $el.find("a");
+      // Try data-content first (for iframe embed), then href
+      const dataContent = $link.attr("data-content") || "";
+      const href = $link.attr("href") || "";
 
-        // Try data-content first (for iframe embed), then href
-        const dataContent = $link.attr("data-content") || "";
-        const href = $link.attr("href") || "";
+      let quality = "";
+      let linkUrl = "";
 
-        let quality = "";
-        let url = "";
-
-        if (dataContent && dataContent !== "#") {
-          // data-content contains base64 encoded JSON with quality info
-          try {
-            // Decode base64
-            const decoded = Buffer.from(dataContent, "base64").toString("utf-8");
-            const data = JSON.parse(decoded);
-
-            // Extract quality from decoded data
-            quality = data.q || data.quality || "";
-            url = dataContent; // Keep the encoded data as URL for the player
-          } catch (e) {
-            // If decode fails, use as-is
-            quality = $el.find("strong").text().trim();
-            url = dataContent;
-          }
-        } else if (href && href !== "#") {
+      if (dataContent && dataContent !== "#") {
+        try {
+          const decoded = Buffer.from(dataContent, "base64").toString("utf-8");
+          const parsed = JSON.parse(decoded);
+          quality = parsed.q || parsed.quality || "";
+          linkUrl = dataContent;
+        } catch (e) {
           quality = $el.find("strong").text().trim();
-          url = href;
+          linkUrl = dataContent;
         }
-
-        if (url) {
-          streamingLinks.push({
-            quality,
-            url,
-          });
-        }
-      });
-
-      // Also get the actual iframe src from player-embed
-      const iframeSrc = $("#pembed iframe").attr("src") || "";
-      if (iframeSrc) {
-        // Add iframe URL to first streaming link or create new entry
-        if (streamingLinks.length > 0) {
-          streamingLinks[0].iframeSrc = iframeSrc;
-        } else {
-          streamingLinks.push({
-            quality: "default",
-            url: iframeSrc,
-            iframeSrc: iframeSrc,
-          });
-        }
+      } else if (href && href !== "#") {
+        quality = $el.find("strong").text().trim();
+        linkUrl = href;
       }
 
-      // Get download links
-      const downloadLinks = [];
-      $(".download ul li").each((i, el) => {
-        const $el = $(el);
-        const quality = $el.find("strong").text().trim();
-
-        const links = [];
-        $el.find("a").each((j, linkEl) => {
-          const host = $(linkEl).text().trim();
-          const url = $(linkEl).attr("href") || "";
-
-          if (url && url !== "#") {
-            links.push({
-              host,
-              url,
-            });
-          }
-        });
-
-        if (quality && links.length > 0) {
-          downloadLinks.push({
-            quality,
-            links,
-          });
-        }
-      });
-
-      return {
-        success: true,
-        data: {
-          title,
-          streamingLinks,
-          downloadLinks,
-        },
-      };
-    } catch (error) {
-      console.error(`[Otakudesu Episode] Attempt ${attempt}/3 failed:`, error.message);
-
-      // If this was the last attempt, return error
-      if (attempt === 3) {
-        return {
-          success: false,
-          message: error.message,
-        };
+      if (linkUrl) {
+        streamingLinks.push({ quality, url: linkUrl });
       }
+    });
 
-      // Otherwise, continue to next attempt
-      continue;
+    // Get iframe src
+    const iframeSrc = $("#pembed iframe").attr("src") || "";
+    if (iframeSrc) {
+      if (streamingLinks.length > 0) {
+        streamingLinks[0].iframeSrc = iframeSrc;
+      } else {
+        streamingLinks.push({ quality: "default", url: iframeSrc, iframeSrc });
+      }
     }
-  }
 
-  // Fallback (should never reach here)
-  return {
-    success: false,
-    message: "All retry attempts failed",
-  };
+    // Get download links
+    const downloadLinks = [];
+    $(".download ul li").each((i, el) => {
+      const $el = $(el);
+      const quality = $el.find("strong").text().trim();
+      const links = [];
+
+      $el.find("a").each((j, linkEl) => {
+        const host = $(linkEl).text().trim();
+        const linkUrl = $(linkEl).attr("href") || "";
+        if (linkUrl && linkUrl !== "#") {
+          links.push({ host, url: linkUrl });
+        }
+      });
+
+      if (quality && links.length > 0) {
+        downloadLinks.push({ quality, links });
+      }
+    });
+
+    return {
+      success: true,
+      data: { title, streamingLinks, downloadLinks },
+    };
+  } catch (error) {
+    console.error(`[Otakudesu Episode] Error:`, error.message);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
 }
 
 /**
