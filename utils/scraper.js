@@ -1,6 +1,7 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
-const { fetchWithPuppeteer } = require("./puppeteer-helper");
+// Puppeteer disabled to reduce CPU usage on Vercel
+// const { fetchWithPuppeteer } = require("./puppeteer-helper");
 
 // Remove trailing slash from BASE_URL to prevent double slashes
 const BASE_URL = (process.env.BASE_URL || "https://www.manhwaindo.my").replace(/\/+$/, "");
@@ -62,24 +63,17 @@ async function fetchHTML(url, options = {}) {
         "Sec-Fetch-Mode": "navigate",
         "Sec-Fetch-Site": "none",
         "Cache-Control": "max-age=0",
+        Referer: "https://www.google.com/",
       },
       timeout: 15000,
     });
     console.log(`[Fetch] Axios success for: ${url}`);
     return cheerio.load(data);
   } catch (error) {
-    // If we get a 403 error, try with Puppeteer
-    if (error.response && error.response.status === 403) {
-      console.log(`[Fetch] Got 403 error, trying Puppeteer for: ${url}`);
-      try {
-        const html = await fetchWithPuppeteer(url, options);
-        return cheerio.load(html);
-      } catch (puppeteerError) {
-        throw new Error(`Failed to fetch ${url} with Puppeteer: ${puppeteerError.message}`);
-      }
-    }
-
-    // For other errors, throw the original error
+    // Puppeteer fallback DISABLED to reduce CPU usage
+    // If 403, just throw error instead of using heavy Puppeteer
+    const statusCode = error.response?.status || "unknown";
+    console.error(`[Fetch] Failed (${statusCode}): ${url}`);
     throw new Error(`Failed to fetch ${url}: ${error.message}`);
   }
 }
@@ -460,41 +454,19 @@ async function scrapeChapter(slug) {
       }
     }
 
-    // If we have series slug, fetch chapter list to get prev/next
+    // Get prev/next from chapter page navigation (no double fetch needed)
     let prevChapter = null;
     let nextChapter = null;
 
-    if (seriesSlug) {
-      try {
-        const seriesUrl = `${BASE_URL}/series/${seriesSlug}/`;
-        const $series = await fetchHTML(seriesUrl);
+    // Try to get prev/next from chapter page navigation links
+    const prevLink = $(".ch-prev-btn a, a.ch-prev-btn, .prev_page, a[rel='prev']").attr("href");
+    const nextLink = $(".ch-next-btn a, a.ch-next-btn, .next_page, a[rel='next']").attr("href");
 
-        // Get all chapters
-        const chapterSlugs = [];
-        $series("#chapterlist li a").each((i, elem) => {
-          const chapterUrl = $series(elem).attr("href") || "";
-          const chapterSlug = chapterUrl.replace(BASE_URL, "").replace(/^\//, "").replace(/\/$/, "").trim();
-          if (chapterSlug && !chapterSlugs.includes(chapterSlug)) {
-            chapterSlugs.push(chapterSlug);
-          }
-        });
-
-        // Find current chapter index
-        const currentIndex = chapterSlugs.indexOf(slug);
-        if (currentIndex !== -1) {
-          // Previous chapter (index - 1)
-          if (currentIndex > 0) {
-            prevChapter = chapterSlugs[currentIndex - 1];
-          }
-          // Next chapter (index + 1)
-          if (currentIndex < chapterSlugs.length - 1) {
-            nextChapter = chapterSlugs[currentIndex + 1];
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching series detail for navigation:", err.message);
-        // Continue without prev/next navigation
-      }
+    if (prevLink) {
+      prevChapter = prevLink.replace(BASE_URL, "").replace(/^\//, "").replace(/\/$/, "").trim();
+    }
+    if (nextLink) {
+      nextChapter = nextLink.replace(BASE_URL, "").replace(/^\//, "").replace(/\/$/, "").trim();
     }
 
     return {
